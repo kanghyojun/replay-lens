@@ -1,20 +1,9 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-
-function corsHeaders() {
-  return {
-    'Access-Control-Allow-Origin': 'http://localhost:3000',
-    'Access-Control-Allow-Credentials': 'true',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  };
-}
+import { corsHeaders, createOptionsResponse } from '@/lib/cors';
 
 export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: corsHeaders(),
-  });
+  return createOptionsResponse();
 }
 
 export async function POST() {

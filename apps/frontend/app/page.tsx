@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/components/auth-provider';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MatchHistory } from '@/components/match-history';
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 
@@ -30,17 +30,12 @@ export default function Home() {
           </div>
         ) : user ? (
           <div className="mt-8">
-            <p className="text-xl text-gray-600">
-              Welcome back, <span className="font-semibold">{user.battletag}</span>!
-            </p>
-            <Card className="mt-8 max-w-md mx-auto">
-              <CardHeader>
-                <CardTitle>Your Stats</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Match tracking coming soon...</p>
-              </CardContent>
-            </Card>
+            <div className="mb-8">
+              <p className="text-xl text-gray-600">
+                Welcome back, <span className="font-semibold">{user.battletag}</span>!
+              </p>
+            </div>
+            <MatchHistory />
           </div>
         ) : (
           <div className="mt-8">
