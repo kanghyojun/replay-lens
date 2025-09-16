@@ -112,3 +112,33 @@ pnpm check-types
 - User sessions are managed via HTTP-only cookies
 - Use the existing auth system for protecting GraphQL resolvers
 - User data is available through the session context
+
+## Frontend Development Guidelines
+
+### UI Components and Design System
+- **ALWAYS use shadcn/ui components** for all UI elements instead of raw Radix UI or custom components
+- shadcn/ui is configured with the "new-york" style variant
+- Use `npx shadcn@latest add [component-name]` to install new components
+- All shadcn components are located in `apps/frontend/components/ui/`
+- Import shadcn components from `@/components/ui/[component-name]`
+- Use the `cn()` utility function from `@/lib/utils` for conditional styling
+- Follow shadcn/ui patterns for component composition and variant handling
+
+### Component Development
+- Prefer shadcn/ui components over custom implementations
+- Use Tailwind CSS for styling with shadcn's design tokens
+- Leverage shadcn's built-in accessibility features
+- When creating custom components, follow shadcn's patterns and use their base components
+
+### Available shadcn/ui Components
+Currently installed components:
+- `Button` - For all button interactions
+- `Avatar` - For user profile images and fallbacks
+- `DropdownMenu` - For dropdown menus and context menus
+
+### Adding New shadcn Components
+When you need a new UI component:
+1. First check if shadcn/ui has the component available
+2. Install it using: `npx shadcn@latest add [component-name]`
+3. Import and use it instead of creating custom components
+4. Common components to consider: Card, Input, Label, Select, Dialog, Sheet, Toast, etc.

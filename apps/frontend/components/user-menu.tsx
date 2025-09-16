@@ -2,8 +2,15 @@
 
 import React from 'react';
 import { useAuth } from './auth-provider';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import * as Avatar from '@radix-ui/react-avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { LogOut, User as UserIcon } from 'lucide-react';
 
 export function UserMenu() {
@@ -17,48 +24,34 @@ export function UserMenu() {
 
   if (!user) {
     return (
-      <button
-        onClick={login}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-      >
+      <Button onClick={login}>
         Login with Battle.net
-      </button>
+      </Button>
     );
   }
 
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild>
-        <button className="focus:outline-none">
-          <Avatar.Root className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center">
-            <Avatar.Fallback className="text-white font-semibold">
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
+          <Avatar className="h-10 w-10">
+            <AvatarFallback className="bg-primary text-primary-foreground">
               {user.battletag.charAt(0).toUpperCase()}
-            </Avatar.Fallback>
-          </Avatar.Root>
-        </button>
-      </DropdownMenu.Trigger>
-
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content
-          className="min-w-[200px] bg-white rounded-lg shadow-lg p-2 z-50"
-          sideOffset={5}
-        >
-          <DropdownMenu.Item className="flex items-center px-3 py-2 text-sm text-gray-700 rounded-md cursor-default">
-            <UserIcon className="mr-2 h-4 w-4" />
-            <span>{user.battletag}</span>
-          </DropdownMenu.Item>
-
-          <DropdownMenu.Separator className="h-px bg-gray-200 my-1" />
-
-          <DropdownMenu.Item
-            className="flex items-center px-3 py-2 text-sm text-gray-700 rounded-md hover:bg-gray-100 cursor-pointer"
-            onSelect={logout}
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Logout</span>
-          </DropdownMenu.Item>
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
+            </AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end">
+        <DropdownMenuItem className="cursor-default">
+          <UserIcon className="mr-2 h-4 w-4" />
+          <span>{user.battletag}</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={logout}>
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Logout</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

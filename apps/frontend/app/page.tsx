@@ -1,6 +1,8 @@
 'use client';
 
 import { useAuth } from '@/components/auth-provider';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 
@@ -31,22 +33,26 @@ export default function Home() {
             <p className="text-xl text-gray-600">
               Welcome back, <span className="font-semibold">{user.battletag}</span>!
             </p>
-            <div className="mt-8 p-6 bg-white rounded-lg shadow-md max-w-md mx-auto">
-              <h2 className="text-lg font-semibold mb-4">Your Stats</h2>
-              <p className="text-gray-500">Match tracking coming soon...</p>
-            </div>
+            <Card className="mt-8 max-w-md mx-auto">
+              <CardHeader>
+                <CardTitle>Your Stats</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">Match tracking coming soon...</p>
+              </CardContent>
+            </Card>
           </div>
         ) : (
           <div className="mt-8">
             <p className="text-xl text-gray-600 mb-8">
               Track your StarCraft II matches and improve your gameplay
             </p>
-            <button
+            <Button
               onClick={() => window.location.href = 'http://localhost:4000/api/auth/battlenet'}
-              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              size="lg"
             >
               Login with Battle.net to Get Started
-            </button>
+            </Button>
           </div>
         )}
       </div>
