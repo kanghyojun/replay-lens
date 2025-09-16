@@ -3,25 +3,38 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack --port 4000",
     "build": "next build --turbopack",
-    "start": "next start",
+    "start": "next start --port 4000",
     "lint": "eslint"
   },
   "dependencies": {
+    "@pothos/plugin-drizzle": "^0.13.0",
+    "@types/express-session": "^1.18.2",
+    "@types/passport": "^1.0.17",
+    "dotenv": "^17.2.2",
+    "drizzle-orm": "1.0.0-beta.1-f92627f",
+    "express-session": "^1.18.2",
+    "next": "15.5.3",
+    "passport": "^0.7.0",
+    "passport-bnet": "^2.0.0",
+    "pg": "^8.16.3",
     "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "next": "15.5.3"
+    "react-dom": "19.1.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/passport-bnet": "^2.0.5",
+    "@types/pg": "^8.15.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "drizzle-kit": "^0.31.4",
     "eslint": "^9",
     "eslint-config-next": "15.5.3",
-    "@eslint/eslintrc": "^3"
+    "tailwindcss": "^4",
+    "tsx": "^4.20.5",
+    "typescript": "^5"
   }
 }
