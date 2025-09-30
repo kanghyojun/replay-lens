@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack --port 4000",
+    "dev": "next dev --turbopack --port 2001",
     "build": "next build --turbopack",
-    "start": "next start --port 4000",
+    "start": "next start --port 2001",
     "lint": "eslint"
   },
   "dependencies": {

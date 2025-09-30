@@ -50,7 +50,7 @@ export function MatchHistory() {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:4000/api/sc2/matches', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/sc2/matches`, {
         credentials: 'include',
       });
 

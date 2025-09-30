@@ -3,6 +3,8 @@
 import { useAuth } from '@/components/auth-provider';
 import { Button } from '@/components/ui/button';
 import { MatchHistory } from '@/components/match-history';
+import { LadderSummary } from '@/components/ladder-summary';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 
@@ -35,7 +37,21 @@ export default function Home() {
                 Welcome back, <span className="font-semibold">{user.battletag}</span>!
               </p>
             </div>
-            <MatchHistory />
+
+            <Tabs defaultValue="matches" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="matches">Match History</TabsTrigger>
+                <TabsTrigger value="ladder">Ladder Summary</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="matches" className="mt-6">
+                <MatchHistory />
+              </TabsContent>
+
+              <TabsContent value="ladder" className="mt-6">
+                <LadderSummary />
+              </TabsContent>
+            </Tabs>
           </div>
         ) : (
           <div className="mt-8">
@@ -43,7 +59,7 @@ export default function Home() {
               Track your StarCraft II matches and improve your gameplay
             </p>
             <Button
-              onClick={() => window.location.href = 'http://localhost:4000/api/auth/battlenet'}
+              onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/battlenet`}
               size="lg"
             >
               Login with Battle.net to Get Started
