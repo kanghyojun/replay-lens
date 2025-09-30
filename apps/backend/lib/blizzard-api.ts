@@ -25,6 +25,102 @@ interface SC2MatchesResponse {
   matches: SC2Match[];
 }
 
+interface LadderTeam {
+  teamMembers: Array<{
+    character: {
+      id: string;
+      realm: number;
+      displayName: string;
+      clanName?: string;
+      clanTag?: string;
+      profilePath: string;
+    };
+    favoriteRace: string;
+    wins: number;
+    losses: number;
+    highestRank: number;
+    previousRank: number;
+    points: number;
+    mmr: number;
+    joinTimestamp: number;
+  }>;
+  localizedGameMode: string;
+  type: number;
+  teamType: number;
+}
+
+interface LadderSummary {
+  showCaseEntries: Array<{
+    ladderId: string;
+    team: {
+      localizedGameMode: string;
+      members: Array<{
+        favoriteRace: string;
+        name: string;
+        playerId: string;
+        region: number;
+      }>;
+    };
+    leagueName: string;
+    localizedDivisionName: string;
+    rank: number;
+    wins: number;
+    losses: number;
+    mmr?: number; // MMR이 없을 수 있음
+  }>;
+  placementMatches: Array<{
+    localizedGameMode: string;
+    members: Array<{
+      name: string;
+      playerId: string;
+      region: number;
+    }>;
+    gamesRemaining: number;
+  }>;
+  allLadderMemberships: Array<{
+    ladderId: string;
+    localizedGameMode: string;
+    rank: number;
+  }>;
+}
+
+interface LadderDetail {
+  ladderTeams: Array<{
+    teamMembers: Array<{
+      character: {
+        id: string;
+        realm: number;
+        displayName: string;
+        clanName?: string;
+        clanTag?: string;
+        profilePath: string;
+      };
+      favoriteRace: string;
+      wins: number;
+      losses: number;
+      highestRank: number;
+      previousRank: number;
+      points: number;
+      mmr: number;
+      joinTimestamp: number;
+    }>;
+    rank: number;
+    mmr: number;
+    wins: number;
+    losses: number;
+  }>;
+  league: {
+    leagueKey: {
+      seasonId: number;
+      queueId: number;
+      teamType: number;
+      leagueId: number;
+    };
+    tierName?: string;
+    divisionName?: string;
+  };
+}
+
 class BlizzardAPI {
   private clientId: string;
   private clientSecret: string;
@@ -38,7 +134,7 @@ class BlizzardAPI {
     this.baseUrl = process.env.BATTLENET_API_URL || 'https://us.api.blizzard.com';
   }
 
-  private async getAccessToken(): Promise<string> {
+  async getAccessToken(): Promise<string> {
     if (this.accessToken && Date.now() < this.tokenExpiry) {
       return this.accessToken;
     }
@@ -102,6 +198,46 @@ class BlizzardAPI {
     return data.matches || [];
   }
 
+  async getLadderSummary(regionId: number, realmId: number, profileId: number): Promise<LadderSummary> {
+    const token = await this.getAccessToken();
+
+    const response = await fetch(
+      `${this.baseUrl}/sc2/profile/${regionId}/${realmId}/${profileId}/ladder/summary?locale=en_US`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to get ladder summary: ${response.statusText}`);
+    }
+
+    const data: LadderSummary = await response.json();
+    return data;
+  }
+
+  async getLadderDetail(regionId: number, realmId: number, profileId: number, ladderId: string): Promise<LadderDetail> {
+    const token = await this.getAccessToken();
+
+    const response = await fetch(
+      `${this.baseUrl}/sc2/profile/${regionId}/${realmId}/${profileId}/ladder/${ladderId}?locale=en_US`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to get ladder detail: ${response.statusText}`);
+    }
+
+    const data: LadderDetail = await response.json();
+    return data;
+  }
+
   getRegionName(regionId: number): string {
     const regions: { [key: number]: string } = {
       1: 'US',
@@ -114,4 +250,4 @@ class BlizzardAPI {
 }
 
 export const blizzardAPI = new BlizzardAPI();
-export type { PlayerProfile, SC2Match };
+export type { PlayerProfile, SC2Match, LadderSummary, LadderDetail };

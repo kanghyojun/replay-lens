@@ -1,10 +1,5 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { corsHeaders, createOptionsResponse } from '@/lib/cors';
-
-export async function OPTIONS() {
-  return createOptionsResponse();
-}
 
 export async function POST() {
   try {
@@ -13,12 +8,12 @@ export async function POST() {
     // Clear the session cookie
     cookieStore.delete('session');
 
-    return NextResponse.json({ success: true }, { headers: corsHeaders() });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Logout error:', error);
     return NextResponse.json(
       { error: 'Failed to logout' },
-      { status: 500, headers: corsHeaders() }
+      { status: 500 }
     );
   }
 }

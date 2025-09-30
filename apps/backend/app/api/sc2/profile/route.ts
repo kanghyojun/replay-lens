@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { blizzardAPI } from '@/lib/blizzard-api';
-import { corsHeaders, createOptionsResponse } from '@/lib/cors';
-
-export async function OPTIONS() {
-  return createOptionsResponse();
-}
 
 export async function GET() {
   try {
@@ -15,7 +10,7 @@ export async function GET() {
     if (!sessionCookie) {
       return NextResponse.json(
         { error: 'Not authenticated' },
-        { status: 401, headers: corsHeaders() }
+        { status: 401 }
       );
     }
 
@@ -26,7 +21,7 @@ export async function GET() {
       cookieStore.delete('session');
       return NextResponse.json(
         { error: 'Session expired' },
-        { status: 401, headers: corsHeaders() }
+        { status: 401 }
       );
     }
 
@@ -37,7 +32,7 @@ export async function GET() {
     if (!accountId) {
       return NextResponse.json(
         { error: 'Account ID not found' },
-        { status: 400, headers: corsHeaders() }
+        { status: 400 }
       );
     }
 
@@ -47,13 +42,13 @@ export async function GET() {
       success: true,
       profile,
       regionName: blizzardAPI.getRegionName(profile.regionId),
-    }, { headers: corsHeaders() });
+    });
 
   } catch (error) {
     console.error('SC2 Profile API error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch profile' },
-      { status: 500, headers: corsHeaders() }
+      { status: 500 }
     );
   }
 }

@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { blizzardAPI } from '@/lib/blizzard-api';
-import { corsHeaders, createOptionsResponse } from '@/lib/cors';
-
-export async function OPTIONS() {
-  return createOptionsResponse();
-}
 
 export async function GET() {
   try {
@@ -15,7 +10,7 @@ export async function GET() {
     if (!sessionCookie) {
       return NextResponse.json(
         { error: 'Not authenticated' },
-        { status: 401, headers: corsHeaders() }
+        { status: 401 }
       );
     }
 
@@ -26,7 +21,7 @@ export async function GET() {
       cookieStore.delete('session');
       return NextResponse.json(
         { error: 'Session expired' },
-        { status: 401, headers: corsHeaders() }
+        { status: 401 }
       );
     }
 
@@ -35,7 +30,7 @@ export async function GET() {
     if (!accountId) {
       return NextResponse.json(
         { error: 'Account ID not found' },
-        { status: 400, headers: corsHeaders() }
+        { status: 400 }
       );
     }
 
@@ -45,7 +40,7 @@ export async function GET() {
     if (latestProfile == null) {
       return NextResponse.json(
         { error: 'No StarCraft II profile found' },
-        { status: 404, headers: corsHeaders() }
+        { status: 404 }
       );
     }
 
@@ -74,13 +69,13 @@ export async function GET() {
       totalMatches: processedMatches.length,
       wins: processedMatches.filter(m => m.isWin).length,
       losses: processedMatches.filter(m => m.isLoss).length,
-    }, { headers: corsHeaders() });
+    });
 
   } catch (error) {
     console.error('SC2 Matches API error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch matches' },
-      { status: 500, headers: corsHeaders() }
+      { status: 500 }
     );
   }
 }
