@@ -105,18 +105,51 @@ export function LadderSummary() {
   };
 
   const getRaceIcon = (race: string) => {
-    console.log('Race value received:', race); // Debug log
     const raceStr = race?.toLowerCase();
     switch (raceStr) {
-      case 'protoss': return '⚡';
-      case 'terran': return '🔧';
-      case 'zerg': return '👾';
-      case 'prot': return '⚡';
-      case 'terr': return '🔧';
+      case 'protoss': return '🛡️';
+      case 'terran': return '⚙️';
+      case 'zerg': return '🦎';
+      case 'prot': return '🛡️';
+      case 'terr': return '⚙️';
       case 'random': return '🎲';
+      default: return '❓';
+    }
+  };
+
+  const getRaceName = (race: string) => {
+    const raceStr = race?.toLowerCase();
+    switch (raceStr) {
+      case 'protoss':
+      case 'prot':
+        return 'Protoss';
+      case 'terran':
+      case 'terr':
+        return 'Terran';
+      case 'zerg':
+        return 'Zerg';
+      case 'random':
+        return 'Random';
       default:
-        console.log('Unknown race:', race); // Debug unknown races
-        return '❓';
+        return 'Unknown';
+    }
+  };
+
+  const getRaceColor = (race: string) => {
+    const raceStr = race?.toLowerCase();
+    switch (raceStr) {
+      case 'protoss':
+      case 'prot':
+        return 'text-yellow-500';
+      case 'terran':
+      case 'terr':
+        return 'text-blue-500';
+      case 'zerg':
+        return 'text-purple-500';
+      case 'random':
+        return 'text-green-500';
+      default:
+        return 'text-gray-500';
     }
   };
 
@@ -148,9 +181,14 @@ export function LadderSummary() {
               <Card key={index} className="w-full">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <span>{getRaceIcon(ladder.teamMembers?.[0]?.favoriteRace)}</span>
-                      {ladder.gameMode}
+                    <CardTitle className="flex items-center gap-3">
+                      <span className="text-4xl">{getRaceIcon(ladder.teamMembers?.[0]?.favoriteRace)}</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xl font-bold ${getRaceColor(ladder.teamMembers?.[0]?.favoriteRace)}`}>
+                          {getRaceName(ladder.teamMembers?.[0]?.favoriteRace)}
+                        </span>
+                        <span className="text-sm text-muted-foreground">{ladder.gameMode}</span>
+                      </div>
                       {ladder.teamMembers?.[0]?.clanTag && (
                         <Badge variant="outline">
                           {ladder.teamMembers[0].clanTag}
@@ -220,12 +258,15 @@ export function LadderSummary() {
                   </div>
 
                   <div className="mt-4 pt-4 border-t">
-                    <div className="text-sm text-muted-foreground">
-                      Total Games: {ladder.totalGames} •
-                      Race: {ladder.teamMembers?.[0]?.favoriteRace || 'Unknown'} •
-                      Player: {ladder.teamMembers?.[0]?.displayName || ladder.teamMembers?.[0]?.name || 'Unknown'}
+                    <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
+                      <span>Total Games: <span className="font-semibold">{ladder.totalGames}</span></span>
+                      <span>•</span>
+                      <span>Player: <span className="font-semibold">{ladder.teamMembers?.[0]?.displayName || ladder.teamMembers?.[0]?.name || 'Unknown'}</span></span>
                       {ladder.localizedDivisionName && (
-                        <span> • Division: {ladder.localizedDivisionName}</span>
+                        <>
+                          <span>•</span>
+                          <span>Division: <span className="font-semibold">{ladder.localizedDivisionName}</span></span>
+                        </>
                       )}
                     </div>
                   </div>
