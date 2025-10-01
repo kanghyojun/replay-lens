@@ -231,6 +231,51 @@ export default function ApiTesterPage() {
     },
   ];
 
+  const legacyEndpoints = [
+    {
+      name: 'Legacy Profile',
+      key: 'legacy-profile',
+      description: '레거시 프로필 정보',
+      params: ['regionId', 'realmId', 'profileId'],
+      test: () => testApi('legacy-profile', { regionId, realmId, profileId }),
+    },
+    {
+      name: 'Legacy Ladders',
+      key: 'legacy-ladders',
+      description: '레거시 래더 목록',
+      params: ['regionId', 'realmId', 'profileId'],
+      test: () => testApi('legacy-ladders', { regionId, realmId, profileId }),
+    },
+    {
+      name: 'Legacy Matches',
+      key: 'legacy-matches',
+      description: '레거시 매치 히스토리',
+      params: ['regionId', 'realmId', 'profileId'],
+      test: () => testApi('legacy-matches', { regionId, realmId, profileId }),
+    },
+    {
+      name: 'Legacy Ladder',
+      key: 'legacy-ladder',
+      description: '레거시 래더 상세 정보',
+      params: ['regionId', 'ladderId'],
+      test: () => testApi('legacy-ladder', { regionId, ladderId }),
+    },
+    {
+      name: 'Legacy Achievements',
+      key: 'legacy-achievements',
+      description: '레거시 업적 정보',
+      params: ['regionId'],
+      test: () => testApi('legacy-achievements', { regionId }),
+    },
+    {
+      name: 'Legacy Rewards',
+      key: 'legacy-rewards',
+      description: '레거시 보상 정보',
+      params: ['regionId'],
+      test: () => testApi('legacy-rewards', { regionId }),
+    },
+  ];
+
   return (
     <div className="container mx-auto p-6 max-w-6xl">
       <h1 className="text-3xl font-bold mb-6">Blizzard API 테스터</h1>
@@ -422,7 +467,7 @@ export default function ApiTesterPage() {
         </div>
 
         {/* Game Data APIs */}
-        <div>
+        <div className="mb-8">
           <h3 className="text-lg font-medium mb-4 text-green-700">Game Data APIs</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {gameDataEndpoints.map((endpoint) => (
@@ -436,6 +481,29 @@ export default function ApiTesterPage() {
                   onClick={endpoint.test}
                   disabled={isLoading}
                   className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  {isLoading ? '테스트 중...' : '테스트 실행'}
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Legacy APIs */}
+        <div>
+          <h3 className="text-lg font-medium mb-4 text-purple-700">Legacy APIs</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {legacyEndpoints.map((endpoint) => (
+              <div key={endpoint.key} className="border p-4 rounded border-purple-200">
+                <h4 className="font-semibold">{endpoint.name}</h4>
+                <p className="text-sm text-gray-600 mb-2">{endpoint.description}</p>
+                <p className="text-xs text-gray-500 mb-3">
+                  필요한 파라미터: {endpoint.params.join(', ')}
+                </p>
+                <Button
+                  onClick={endpoint.test}
+                  disabled={isLoading}
+                  className="w-full bg-purple-600 hover:bg-purple-700"
                 >
                   {isLoading ? '테스트 중...' : '테스트 실행'}
                 </Button>

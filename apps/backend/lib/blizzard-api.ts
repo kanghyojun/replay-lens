@@ -162,80 +162,48 @@ class BlizzardAPI {
     return this.accessToken;
   }
 
-  async getPlayerProfile(accountId: string): Promise<PlayerProfile[]> {
+  private async fetchAPI(endpoint: string): Promise<Response> {
     const token = await this.getAccessToken();
+    const url = `${this.baseUrl}${endpoint}`;
 
-    const response = await fetch(`${this.baseUrl}/sc2/player/${accountId}?locale=en_US`, {
+    return fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
     });
+  }
+
+  private async fetchJSON<T = any>(endpoint: string): Promise<T> {
+    const response = await this.fetchAPI(endpoint);
 
     if (!response.ok) {
-      throw new Error(`Failed to get player profile: ${response.statusText}`);
+      throw new Error(`API request failed: ${response.statusText}`);
     }
 
     return await response.json();
   }
 
+  async getPlayerProfile(accountId: string): Promise<PlayerProfile[]> {
+    return this.fetchJSON<PlayerProfile[]>(`/sc2/player/${accountId}?locale=en_US`);
+  }
+
   async getPlayerMatches(regionId: number, realmId: number, profileId: number): Promise<SC2Match[]> {
-    const token = await this.getAccessToken();
-
-    const response = await fetch(
-      `${this.baseUrl}/sc2/legacy/profile/${regionId}/${realmId}/${profileId}/matches?locale=en_US`,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      }
+    const data = await this.fetchJSON<SC2MatchesResponse>(
+      `/sc2/legacy/profile/${regionId}/${realmId}/${profileId}/matches?locale=en_US`
     );
-    if (!response.ok) {
-      throw new Error(`Failed to get player matches: ${response.statusText}`);
-    }
-
-    const data: SC2MatchesResponse = await response.json();
-    console.log(data);
     return data.matches || [];
   }
 
   async getLadderSummary(regionId: number, realmId: number, profileId: number): Promise<LadderSummary> {
-    const token = await this.getAccessToken();
-
-    const response = await fetch(
-      `${this.baseUrl}/sc2/profile/${regionId}/${realmId}/${profileId}/ladder/summary?locale=en_US`,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      }
+    return this.fetchJSON<LadderSummary>(
+      `/sc2/profile/${regionId}/${realmId}/${profileId}/ladder/summary?locale=en_US`
     );
-
-    if (!response.ok) {
-      throw new Error(`Failed to get ladder summary: ${response.statusText}`);
-    }
-
-    const data: LadderSummary = await response.json();
-    return data;
   }
 
   async getLadderDetail(regionId: number, realmId: number, profileId: number, ladderId: string): Promise<LadderDetail> {
-    const token = await this.getAccessToken();
-
-    const response = await fetch(
-      `${this.baseUrl}/sc2/profile/${regionId}/${realmId}/${profileId}/ladder/${ladderId}?locale=en_US`,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      }
+    return this.fetchJSON<LadderDetail>(
+      `/sc2/profile/${regionId}/${realmId}/${profileId}/ladder/${ladderId}?locale=en_US`
     );
-
-    if (!response.ok) {
-      throw new Error(`Failed to get ladder detail: ${response.statusText}`);
-    }
-
-    const data: LadderDetail = await response.json();
-    return data;
   }
 
   getRegionName(regionId: number): string {
@@ -246,6 +214,72 @@ class BlizzardAPI {
       5: 'CN',
     };
     return regions[regionId] || 'Unknown';
+  }
+
+  getRegionString(regionId: number): string {
+    const regions: { [key: number]: string } = {
+      1: 'us',
+      2: 'eu',
+      3: 'ko',
+      5: 'cn',
+    };
+    return regions[regionId] || 'us';
+  }
+
+  // === Legacy APIs ===
+  async getLegacyProfile(regionId: number, realmId: number, profileId: number): Promise<any> {
+    return this.fetchJSON(`/sc2/legacy/profile/${regionId}/${realmId}/${profileId}?locale=en_US`);
+  }
+
+  async getLegacyLadders(regionId: number, realmId: number, profileId: number): Promise<any> {
+    return this.fetchJSON(`/sc2/legacy/profile/${regionId}/${realmId}/${profileId}/ladders?locale=en_US`);
+  }
+
+  async getLegacyMatches(regionId: number, realmId: number, profileId: number): Promise<any> {
+    return this.fetchJSON(`/sc2/legacy/profile/${regionId}/${realmId}/${profileId}/matches?locale=en_US`);
+  }
+
+  async getLegacyLadder(regionId: number, ladderId: string): Promise<any> {
+    return this.fetchJSON(`/sc2/legacy/ladder/${regionId}/${ladderId}?locale=en_US`);
+  }
+
+  async getLegacyAchievements(regionId: number): Promise<any> {
+    return this.fetchJSON(`/sc2/legacy/data/achievements/${regionId}?locale=en_US`);
+  }
+
+  async getLegacyRewards(regionId: number): Promise<any> {
+    return this.fetchJSON(`/sc2/legacy/data/rewards/${regionId}?locale=en_US`);
+  }
+
+  // === Game Data APIs ===
+  async getLeagueData(seasonId: number, queueId: number, teamType: number, leagueId: number): Promise<any> {
+    return this.fetchJSON(`/data/sc2/league/${seasonId}/${queueId}/${teamType}/${leagueId}?locale=en_US`);
+  }
+
+  async getGrandmasterLeaderboard(regionId: number): Promise<any> {
+    return this.fetchJSON(`/data/sc2/ladder/grandmaster/${regionId}?locale=en_US`);
+  }
+
+  async getSeasonData(regionId: number): Promise<any> {
+    const regionString = this.getRegionString(regionId);
+    return this.fetchJSON(`/sc2/ladder/season/${regionId}?region=${regionString}&locale=en_US`);
+  }
+
+  async getRewards(regionId: number): Promise<any> {
+    return this.fetchJSON(`/data/sc2/rewards/${regionId}?locale=en_US`);
+  }
+
+  // === Community APIs (추가) ===
+  async getStaticProfile(regionId: number, realmId: number, profileId: number): Promise<any> {
+    return this.fetchJSON(`/sc2/static/profile/${regionId}/${realmId}/${profileId}?locale=en_US`);
+  }
+
+  async getMetadataProfile(regionId: number, realmId: number, profileId: number): Promise<any> {
+    return this.fetchJSON(`/sc2/metadata/profile/${regionId}/${realmId}/${profileId}?locale=en_US`);
+  }
+
+  async getAccount(accountId: string): Promise<any> {
+    return this.fetchJSON(`/sc2/player/${accountId}?locale=en_US`);
   }
 }
 
