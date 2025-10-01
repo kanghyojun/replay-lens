@@ -31,7 +31,9 @@ export default function RootLayout({
       >
         <AuthProvider>
           <Navigation />
-          {children}
+          <main className="ml-16">
+            {children}
+          </main>
         </AuthProvider>
       </body>
     </html>
