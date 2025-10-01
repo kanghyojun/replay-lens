@@ -3,7 +3,7 @@
 import { useAuth } from '@/components/auth-provider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trophy, History, BarChart3 } from 'lucide-react';
+import { Trophy, History, FileVideo } from 'lucide-react';
 import { useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -51,7 +51,7 @@ export default function Home() {
       </div>
 
       {user && (
-        <div className="grid md:grid-cols-2 gap-6 mt-12">
+        <div className="grid md:grid-cols-3 gap-6 mt-12">
           <Link href="/matches">
             <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
               <CardHeader>
@@ -89,6 +89,27 @@ export default function Home() {
               <CardContent>
                 <p className="text-sm text-muted-foreground">
                   See your current ladder standings, MMR, and league rankings across all game modes.
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/replays">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-green-500/10 rounded-lg">
+                    <FileVideo className="h-6 w-6 text-green-500" />
+                  </div>
+                  <div>
+                    <CardTitle>Replay Analysis</CardTitle>
+                    <CardDescription>Upload and analyze replays</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Upload your replay files for detailed match analysis and insights.
                 </p>
               </CardContent>
             </Card>
@@ -134,14 +155,14 @@ export default function Home() {
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="p-3 bg-green-500/10 rounded-lg">
-                  <BarChart3 className="h-6 w-6 text-green-500" />
+                  <FileVideo className="h-6 w-6 text-green-500" />
                 </div>
-                <CardTitle>Performance Analytics</CardTitle>
+                <CardTitle>Replay Analysis</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Analyze your gameplay trends and improve your skills over time.
+                Upload and analyze your replay files for deeper insights into your gameplay.
               </p>
             </CardContent>
           </Card>

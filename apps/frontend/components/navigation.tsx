@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from './auth-provider';
-import { Trophy, History, Home, LogOut } from 'lucide-react';
+import { Trophy, History, Home, LogOut, FileVideo } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export function Navigation() {
@@ -19,6 +19,7 @@ export function Navigation() {
     { href: '/', label: 'Home', icon: Home },
     { href: '/matches', label: 'Match History', icon: History },
     { href: '/ladder', label: 'Ladder', icon: Trophy },
+    { href: '/replays', label: 'Replays', icon: FileVideo },
   ];
 
   if (!user) {
