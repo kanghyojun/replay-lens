@@ -32,9 +32,16 @@ interface MatchData {
     name: string;
     regionName: string;
   };
+  season: {
+    seasonId: number;
+    number: number;
+    year: number;
+    startDate: number;
+  };
   totalMatches: number;
   wins: number;
   losses: number;
+  winRate: string;
 }
 
 export function MatchHistory() {
@@ -82,48 +89,20 @@ export function MatchHistory() {
     return null;
   }
 
-  const winRate = matchData ? Math.round((matchData.wins / matchData.totalMatches) * 100) : 0;
-
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <Target className="h-4 w-4 text-muted-foreground" />
-              <div className="text-2xl font-bold">{matchData?.totalMatches || 0}</div>
-            </div>
-            <p className="text-xs text-muted-foreground">Total Matches</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <Trophy className="h-4 w-4 text-green-500" />
-              <div className="text-2xl font-bold text-green-500">{matchData?.wins || 0}</div>
-            </div>
-            <p className="text-xs text-muted-foreground">Wins</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <div className="text-2xl font-bold">{winRate}%</div>
-            </div>
-            <p className="text-xs text-muted-foreground">Win Rate</p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Season Stats */}
+      {matchData?.season && (
+        <div className="text-sm text-muted-foreground">
+          Season {matchData.season.number} {matchData.season.year}: {matchData.wins}W-{matchData.losses}L ({matchData.winRate}% win rate)
+        </div>
+      )}
 
       {/* Match History */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Recent Matches</CardTitle>
-          <Button onClick={fetchMatches} disabled={loading} size="sm">
+          <CardTitle>Recent 25 Matches</CardTitle>
+          <Button onClick={fetchMatches} disabled={loading} size="sm" variant="outline">
             {loading ? 'Loading...' : 'Refresh'}
           </Button>
         </CardHeader>
@@ -147,24 +126,22 @@ export function MatchHistory() {
                   <TableHead>Result</TableHead>
                   <TableHead>Map</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Speed</TableHead>
                   <TableHead>Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {matchData.matches.slice(0, 10).map((match, index) => (
+                {matchData.matches.map((match, index) => (
                   <TableRow key={index}>
                     <TableCell>
                       <Badge
-                        variant={match.isWin ? "default" : match.isLoss ? "destructive" : "secondary"}
-                        className={match.isWin ? "bg-green-500 hover:bg-green-600" : ""}
+                        variant="outline"
+                        className={match.isWin ? "text-green-600 border-green-300" : match.isLoss ? "text-red-600 border-red-300" : ""}
                       >
                         {match.decision}
                       </Badge>
                     </TableCell>
                     <TableCell className="font-medium">{match.map}</TableCell>
                     <TableCell>{match.type}</TableCell>
-                    <TableCell>{match.speed}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {match.dateFormatted}
                     </TableCell>

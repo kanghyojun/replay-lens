@@ -44,6 +44,10 @@ export async function GET() {
       );
     }
 
+    // Get current season data
+    const seasonData = await blizzardAPI.getSeasonData(latestProfile.regionId);
+    const currentSeasonStart = parseInt(seasonData.startDate);
+
     // Then get the matches using those IDs
     const matches = await blizzardAPI.getPlayerMatches(
       latestProfile.regionId,
@@ -55,10 +59,17 @@ export async function GET() {
     const processedMatches = matches.map(match => ({
       ...match,
       dateFormatted: new Date(match.date * 1000).toLocaleString(),
-      isWin: match.decision === 'WIN',
-      isLoss: match.decision === 'LOSS',
+      isWin: match.decision.toUpperCase() === 'WIN',
+      isLoss: match.decision.toUpperCase() === 'LOSS',
     }));
 
+    // Filter matches for current season
+    const currentSeasonMatches = processedMatches.filter(
+      match => match.date >= currentSeasonStart
+    );
+
+    // Note: Blizzard Legacy API returns only the most recent 25 matches
+    // So the stats are based on recent 25 matches within the current season
     return NextResponse.json({
       success: true,
       matches: processedMatches,
@@ -66,9 +77,19 @@ export async function GET() {
         name: latestProfile.name,
         regionName: blizzardAPI.getRegionName(latestProfile.regionId),
       },
-      totalMatches: processedMatches.length,
-      wins: processedMatches.filter(m => m.isWin).length,
-      losses: processedMatches.filter(m => m.isLoss).length,
+      season: {
+        seasonId: seasonData.seasonId,
+        number: seasonData.number,
+        year: seasonData.year,
+        startDate: currentSeasonStart,
+      },
+      apiLimit: 25, // Blizzard API only returns last 25 matches
+      totalMatches: currentSeasonMatches.length,
+      wins: currentSeasonMatches.filter(m => m.isWin).length,
+      losses: currentSeasonMatches.filter(m => m.isLoss).length,
+      winRate: currentSeasonMatches.length > 0
+        ? (currentSeasonMatches.filter(m => m.isWin).length / currentSeasonMatches.length * 100).toFixed(1)
+        : '0.0',
     });
 
   } catch (error) {
