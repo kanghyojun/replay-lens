@@ -39,3 +39,9 @@ yarn-error.log*
 
 # Claude Code Hooks (contain sensitive webhook URLs)
 .claude/hooks
+
+# Claude Code configuration
+.claude/
+
+# API test results
+api-test-results/
