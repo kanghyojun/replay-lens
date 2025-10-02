@@ -9,20 +9,24 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft, Users, Trophy, Clock, Map } from 'lucide-react';
 
 interface ReplayData {
+  id: number;
   filename: string;
   fileSize: number;
-  matchDate: number;
-  mapName: string;
-  duration: number;
-  gameLength: number;
-  winner: string;
+  matchDate: string | null;
+  mapName: string | null;
+  gameLength: number | null;
+  gameType: string | null;
+  winner: string | null;
+  uploadedAt: string;
   players: Array<{
     name: string;
     race: string;
     teamId: number;
     color: any;
     result: string;
-  }>;
+  }> | null;
+  replayHeader: any;
+  replayDetails: any;
 }
 
 export default function ReplayDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -31,12 +35,38 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
   const router = useRouter();
   const [replayData, setReplayData] = useState<ReplayData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // TODO: Fetch replay data from API
-    // For now, show mock data
-    setLoading(false);
-  }, [resolvedParams.id]);
+    async function fetchReplay() {
+      try {
+        setLoading(true);
+        const response = await fetch(`http://localhost:2001/api/replays/${resolvedParams.id}`, {
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch replay');
+        }
+
+        const data = await response.json();
+        if (data.success) {
+          setReplayData(data.replay);
+        } else {
+          setError(data.error || 'Failed to load replay');
+        }
+      } catch (err) {
+        console.error('Error fetching replay:', err);
+        setError('Failed to load replay data');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (user) {
+      fetchReplay();
+    }
+  }, [resolvedParams.id, user]);
 
   if (authLoading || loading) {
     return (
@@ -64,15 +94,73 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
     );
   }
 
+  if (error || (!loading && !replayData)) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-4">Replay Not Found</h1>
+          <p className="text-muted-foreground mb-8">
+            {error || 'The requested replay could not be found'}
+          </p>
+          <Button onClick={() => router.push('/replays')}>
+            Back to Replays
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Format duration from game loops
+  const formatDuration = (gameLength: number | null) => {
+    if (!gameLength) return 'Unknown';
+    const seconds = Math.floor(gameLength / 22.4); // SC2 runs at ~22.4 game loops per second
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  // Format date
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Unknown';
+    const date = new Date(parseInt(dateString) * 1000);
+    return date.toLocaleString();
+  };
+
+  // Get race color
+  const getRaceColor = (race: string) => {
+    switch (race?.toLowerCase()) {
+      case 'terr': return 'bg-blue-500';
+      case 'prot': return 'bg-yellow-500';
+      case 'zerg': return 'bg-purple-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  // Get result text from result code
+  const getResultText = (result: string | number) => {
+    if (typeof result === 'number') {
+      return result === 1 ? 'Win' : result === 2 ? 'Loss' : 'Unknown';
+    }
+    return result || 'Unknown';
+  };
+
+  // Check if result is win
+  const isWin = (result: string | number) => {
+    if (typeof result === 'number') {
+      return result === 1;
+    }
+    return result?.toLowerCase() === 'win';
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Replay Analysis</h1>
+            <h1 className="text-3xl font-bold">{replayData?.filename || 'Replay Analysis'}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Replay ID: {resolvedParams.id}
+              Uploaded: {replayData ? new Date(replayData.uploadedAt).toLocaleString() : 'Unknown'}
             </p>
           </div>
           <Button onClick={() => router.push('/replays')} variant="outline">
@@ -80,15 +168,6 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
             Back to Replays
           </Button>
         </div>
-
-        {/* Mock Data Notice */}
-        <Card className="border-yellow-500/50 bg-yellow-500/5">
-          <CardContent className="p-4">
-            <p className="text-sm text-yellow-600 dark:text-yellow-500">
-              <strong>Mock View:</strong> This is a placeholder page. Actual replay analysis will be implemented later.
-            </p>
-          </CardContent>
-        </Card>
 
         {/* Game Overview */}
         <Card>
@@ -102,28 +181,28 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
                 <Map className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Map</p>
-                  <p className="font-medium">[Map Name]</p>
+                  <p className="font-medium">{replayData?.mapName || 'Unknown'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Clock className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Duration</p>
-                  <p className="font-medium">[Duration]</p>
+                  <p className="font-medium">{formatDuration(replayData?.gameLength || null)}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Users className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Game Type</p>
-                  <p className="font-medium">1v1</p>
+                  <p className="font-medium">{replayData?.gameType || 'Unknown'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Trophy className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Winner</p>
-                  <p className="font-medium">[Winner Name]</p>
+                  <p className="font-medium">{replayData?.winner || 'Unknown'}</p>
                 </div>
               </div>
             </div>
@@ -138,20 +217,28 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {[1, 2].map((player) => (
-                <div key={player} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-4">
-                    <div className="w-3 h-3 rounded-full bg-blue-500" />
-                    <div>
-                      <p className="font-medium">Player {player}</p>
-                      <p className="text-sm text-muted-foreground">Terran</p>
+              {replayData?.players && replayData.players.length > 0 ? (
+                replayData.players.map((player, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-3 h-3 rounded-full ${getRaceColor(player.race)}`} />
+                      <div>
+                        <p className="font-medium">{player.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {player.race} • Team {player.teamId}
+                        </p>
+                      </div>
                     </div>
+                    <Badge variant={isWin(player.result) ? "default" : "destructive"}>
+                      {getResultText(player.result)}
+                    </Badge>
                   </div>
-                  <Badge variant={player === 1 ? "default" : "destructive"}>
-                    {player === 1 ? "Victory" : "Defeat"}
-                  </Badge>
+                ))
+              ) : (
+                <div className="text-center py-4 text-muted-foreground">
+                  No player data available
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>

@@ -4,8 +4,18 @@ import { useAuth } from '@/components/auth-provider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Upload, FileVideo, X } from 'lucide-react';
+
+interface Replay {
+  id: number;
+  filename: string;
+  uploadedAt: string;
+  matchDate: string | null;
+  mapName: string | null;
+  gameType: string | null;
+  winner: string | null;
+}
 
 export default function ReplaysPage() {
   const { user, loading: authLoading } = useAuth();
@@ -14,6 +24,8 @@ export default function ReplaysPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [replays, setReplays] = useState<Replay[]>([]);
+  const [loadingReplays, setLoadingReplays] = useState(false);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -84,6 +96,32 @@ export default function ReplaysPage() {
     setSelectedFile(null);
     setError(null);
   };
+
+  const fetchReplays = useCallback(async () => {
+    if (!user) return;
+
+    setLoadingReplays(true);
+    try {
+      const response = await fetch('http://localhost:2001/api/replays', {
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setReplays(data.replays);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch replays:', err);
+    } finally {
+      setLoadingReplays(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchReplays();
+  }, [fetchReplays]);
 
   if (authLoading) {
     return (
@@ -209,7 +247,7 @@ export default function ReplaysPage() {
           </CardContent>
         </Card>
 
-        {/* Recent Replays Placeholder */}
+        {/* Recent Replays */}
         <Card>
           <CardHeader>
             <CardTitle>Recent Replays</CardTitle>
@@ -218,9 +256,39 @@ export default function ReplaysPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-              No replays uploaded yet. Upload your first replay to get started!
-            </div>
+            {loadingReplays ? (
+              <div className="flex justify-center py-8">
+                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+              </div>
+            ) : replays.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No replays uploaded yet. Upload your first replay to get started!
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {replays.map((replay) => (
+                  <div
+                    key={replay.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors"
+                    onClick={() => router.push(`/replays/${replay.id}`)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <FileVideo className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium">{replay.filename}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {replay.mapName || 'Unknown Map'} • {replay.gameType || 'Unknown'}
+                          {replay.winner && ` • Winner: ${replay.winner}`}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {new Date(replay.uploadedAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

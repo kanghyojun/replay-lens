@@ -4,6 +4,8 @@ import { readFile } from 'fs/promises';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { SC2Replay } from 'sc2ts';
+import { db } from '@/lib/db';
+import { replaysTable } from '@/lib/db/schema';
 
 export async function POST(request: NextRequest) {
   try {
@@ -64,23 +66,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Helper function to convert BigInt to string recursively
-    const serializeBigInt = (obj: any): any => {
+    // Helper function to sanitize data: convert BigInt to string and remove null bytes
+    const sanitizeData = (obj: any): any => {
       if (obj === null || obj === undefined) return obj;
       if (typeof obj === 'bigint') return obj.toString();
-      if (Array.isArray(obj)) return obj.map(serializeBigInt);
+      if (typeof obj === 'string') {
+        // Remove all null bytes and other problematic Unicode characters
+        return obj.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
+      }
+      if (Array.isArray(obj)) return obj.map(sanitizeData);
       if (typeof obj === 'object') {
-        const serialized: any = {};
+        const sanitized: any = {};
         for (const key in obj) {
-          serialized[key] = serializeBigInt(obj[key]);
+          sanitized[key] = sanitizeData(obj[key]);
         }
-        return serialized;
+        return sanitized;
       }
       return obj;
     };
 
     // Extract replay data
-    const replayData = serializeBigInt({
+    const replayData = sanitizeData({
       filename: file.name,
       fileSize: file.size,
       matchDate: replay.replayDetails?.timeUTC,
@@ -108,15 +114,47 @@ export async function POST(request: NextRequest) {
 
     await writeFile(filePath, buffer);
 
-    // For now, return the parsed data
-    // TODO: Save to database
-    const replayId = timestamp; // Use timestamp as temporary ID
+    // Determine game type from number of players
+    const playersPerTeam = new Map<number, number>();
+    replay.players.forEach(p => {
+      playersPerTeam.set(p.teamId, (playersPerTeam.get(p.teamId) || 0) + 1);
+    });
+    const teams = Array.from(playersPerTeam.values());
+    const gameType = teams.length === 2 ? `${teams[0]}v${teams[1]}` : 'FFA';
+
+    // Remove cacheHandles from replayDetails
+    const replayDetailsWithoutCache = replay.replayDetails ? {
+      ...replay.replayDetails,
+      cacheHandles: undefined,
+    } : null;
+
+    // Save to database
+    const [insertedReplay] = await db.insert(replaysTable).values({
+      userId: userId.toString(),
+      filename: file.name,
+      matchDate: replay.replayDetails?.timeUTC ? BigInt(replay.replayDetails.timeUTC) : null,
+      mapName: replay.replayDetails?.title || null,
+      gameType,
+      replayHeader: sanitizeData(replay.replayHeader),
+      replayDetails: sanitizeData(replayDetailsWithoutCache),
+      players: sanitizeData(replay.players.map(p => ({
+        name: p.name,
+        race: p.race,
+        teamId: p.teamId,
+        color: p.color,
+        result: p.result,
+      }))),
+      winner: replay.winner?.name || null,
+      gameLength: replay.gameLength || null,
+      filePath,
+      fileSize: file.size,
+    }).returning();
 
     return NextResponse.json({
       success: true,
-      replayId,
+      replayId: insertedReplay.id,
       message: 'Replay uploaded and parsed successfully',
-      data: replayData,
+      data: sanitizeData(insertedReplay),
     });
 
   } catch (error) {

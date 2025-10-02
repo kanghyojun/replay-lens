@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { db } from '@/lib/db';
 import { replaysTable } from '@/lib/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('session');
@@ -27,6 +30,15 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = sessionData.user.id;
+    const { id } = await params;
+    const replayId = parseInt(id, 10);
+
+    if (isNaN(replayId)) {
+      return NextResponse.json(
+        { error: 'Invalid replay ID' },
+        { status: 400 }
+      );
+    }
 
     // Helper function to convert BigInt and Date to string recursively
     const serializeBigInt = (obj: any): any => {
@@ -44,22 +56,34 @@ export async function GET(request: NextRequest) {
       return obj;
     };
 
-    // Fetch replays from database
-    const replays = await db
+    // Fetch replay from database
+    const [replay] = await db
       .select()
       .from(replaysTable)
-      .where(eq(replaysTable.userId, userId.toString()))
-      .orderBy(desc(replaysTable.uploadedAt));
+      .where(
+        and(
+          eq(replaysTable.id, replayId),
+          eq(replaysTable.userId, userId.toString())
+        )
+      )
+      .limit(1);
+
+    if (!replay) {
+      return NextResponse.json(
+        { error: 'Replay not found' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      replays: serializeBigInt(replays),
+      replay: serializeBigInt(replay),
     });
 
   } catch (error) {
-    console.error('Replays list error:', error);
+    console.error('Replay fetch error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch replays' },
+      { error: 'Failed to fetch replay' },
       { status: 500 }
     );
   }
