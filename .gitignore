@@ -47,6 +47,6 @@ yarn-error.log*
 api-test-results/
 
 # Playwright
-/playwright-report/
-/playwright/.auth/
-/test-results/
+playwright-report/
+**/playwright/.auth/
+test-results/
