@@ -2,11 +2,10 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
+import { ViewAllButton } from '@/components/ViewAllButton';
 import { extractSupplyBlocks } from '@/lib/supply-block';
 import { getPlayerColor } from '@/lib/player-colors';
 import type { TrackerEvent, Player } from 'sc2ts';
-import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 
 interface SupplyBlockCardProps {
@@ -109,25 +108,11 @@ export function SupplyBlockCard({ trackerEvents, players }: SupplyBlockCardProps
         </div>
 
         {hasMore && (
-          <div className="mt-4 flex justify-center">
-            <Button
-              variant="outline"
-              onClick={() => setShowAll(!showAll)}
-              className="gap-2"
-            >
-              {showAll ? (
-                <>
-                  Show Less
-                  <ChevronUp className="h-4 w-4" />
-                </>
-              ) : (
-                <>
-                  View All ({allBlocks.length} blocks)
-                  <ChevronDown className="h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </div>
+          <ViewAllButton
+            showAll={showAll}
+            onToggle={() => setShowAll(!showAll)}
+            totalCount={allBlocks.length}
+          />
         )}
 
         {/* Summary */}

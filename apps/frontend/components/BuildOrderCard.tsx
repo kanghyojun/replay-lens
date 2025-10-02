@@ -4,8 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ViewAllButton } from '@/components/ViewAllButton';
 import { UnitIcon } from '@/components/UnitIcon';
 import { extractBuildOrder } from '@/lib/build-order';
 import { getPlayerColor } from '@/lib/player-colors';
@@ -144,24 +143,11 @@ export function BuildOrderCard({ trackerEvents, players }: BuildOrderCardProps) 
         </TooltipProvider>
 
         {hasMore && (
-          <div className="mt-4 flex justify-center">
-            <Button
-              variant="outline"
-              onClick={() => setShowAll(!showAll)}
-            >
-              {showAll ? (
-                <>
-                  <ChevronUp className="h-4 w-4 mr-2" />
-                  Show Less
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="h-4 w-4 mr-2" />
-                  View All ({timeline.length} rows)
-                </>
-              )}
-            </Button>
-          </div>
+          <ViewAllButton
+            showAll={showAll}
+            onToggle={() => setShowAll(!showAll)}
+            totalCount={timeline.length}
+          />
         )}
       </CardContent>
     </Card>
