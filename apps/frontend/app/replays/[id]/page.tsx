@@ -14,6 +14,7 @@ import { BuildOrderCard } from '@/components/BuildOrderCard';
 import { ArmyCompositionCard } from '@/components/ArmyCompositionCard';
 import { SupplyBlockCard } from '@/components/SupplyBlockCard';
 import { EconomyAnalysisCard } from '@/components/EconomyAnalysisCard';
+import { BattleCard } from '@/components/BattleCard';
 import { getPlayerColor } from '@/lib/player-colors';
 import type { TrackerEvent, GameEvent, MessageEvent, Player, ReplayHeader, ReplayDetails } from 'sc2ts';
 
@@ -288,33 +289,13 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
           />
         )}
 
-        {/* Analysis Sections (Mock) */}
-        <div className="grid md:grid-cols-2 gap-6">
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Timeline</CardTitle>
-              <CardDescription>Key events throughout the match</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                Coming soon...
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Statistics</CardTitle>
-              <CardDescription>APM, resources, and more</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                Coming soon...
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Battles */}
+        {replayData?.trackerEvents && replayData?.players && (
+          <BattleCard
+            trackerEvents={replayData.trackerEvents}
+            players={replayData.players}
+          />
+        )}
 
         {/* Timeline Charts */}
         {replayData?.trackerEvents && replayData?.players && (
