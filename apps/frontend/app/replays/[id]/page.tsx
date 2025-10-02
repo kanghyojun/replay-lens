@@ -12,6 +12,7 @@ import { ArmyValueTimelineChart } from '@/components/ArmyValueTimelineChart';
 import { MineralCollectionRateChart } from '@/components/MineralCollectionRateChart';
 import { BuildOrderCard } from '@/components/BuildOrderCard';
 import { ArmyCompositionCard } from '@/components/ArmyCompositionCard';
+import { SupplyBlockCard } from '@/components/SupplyBlockCard';
 import { getPlayerColor } from '@/lib/player-colors';
 import type { TrackerEvent, GameEvent, MessageEvent, Player, ReplayHeader, ReplayDetails } from 'sc2ts';
 
@@ -265,6 +266,14 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
         {/* Army Composition */}
         {replayData?.trackerEvents && replayData?.players && (
           <ArmyCompositionCard
+            trackerEvents={replayData.trackerEvents}
+            players={replayData.players}
+          />
+        )}
+
+        {/* Supply Blocks */}
+        {replayData?.trackerEvents && replayData?.players && (
+          <SupplyBlockCard
             trackerEvents={replayData.trackerEvents}
             players={replayData.players}
           />
