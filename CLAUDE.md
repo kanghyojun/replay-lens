@@ -142,3 +142,18 @@ When you need a new UI component:
 2. Install it using: `npx shadcn@latest add [component-name]`
 3. Import and use it instead of creating custom components
 4. Common components to consider: Card, Input, Label, Select, Dialog, Sheet, Toast, etc.
+
+## TypeScript Guidelines
+
+### Type Safety
+- **NEVER use `any` type** - Always use proper types or `unknown` when type is truly unknown
+- Use TypeScript's strict mode and respect all type errors
+- For external libraries, check if they provide type definitions (e.g., sc2ts provides proper types for replay data)
+- Use type inference when possible, but add explicit types for function parameters and return values
+- Prefer `interface` for object shapes and `type` for unions/intersections
+
+### Working with External Types
+- **sc2ts library** provides typed interfaces for StarCraft II replay data
+- Import types from sc2ts when working with replay events, player stats, etc.
+- Check the library's type definitions before creating custom types
+- Example: Use `SC2Replay` types for tracker events, game events, and message events
