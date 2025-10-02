@@ -7,6 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, Users, Trophy, Clock, Map } from 'lucide-react';
+import { WorkerTimelineChart } from '@/components/WorkerTimelineChart';
+import { ArmyValueTimelineChart } from '@/components/ArmyValueTimelineChart';
+import { MineralCollectionRateChart } from '@/components/MineralCollectionRateChart';
+import { getPlayerColor } from '@/lib/player-colors';
+import type { TrackerEvent, GameEvent, MessageEvent, Player, ReplayHeader, ReplayDetails } from 'sc2ts';
 
 interface ReplayData {
   id: number;
@@ -18,15 +23,12 @@ interface ReplayData {
   gameType: string | null;
   winner: string | null;
   uploadedAt: string;
-  players: Array<{
-    name: string;
-    race: string;
-    teamId: number;
-    color: any;
-    result: string;
-  }> | null;
-  replayHeader: any;
-  replayDetails: any;
+  players: Player[] | null;
+  replayHeader: ReplayHeader;
+  replayDetails: ReplayDetails;
+  trackerEvents: TrackerEvent[];
+  gameEvents: GameEvent[];
+  messageEvents: MessageEvent[];
 }
 
 export default function ReplayDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -36,6 +38,7 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
   const [replayData, setReplayData] = useState<ReplayData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [syncedTime, setSyncedTime] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchReplay() {
@@ -221,7 +224,10 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
                 replayData.players.map((player, index) => (
                   <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center gap-4">
-                      <div className={`w-3 h-3 rounded-full ${getRaceColor(player.race)}`} />
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: getPlayerColor(index) }}
+                      />
                       <div>
                         <p className="font-medium">{player.name}</p>
                         <p className="text-sm text-muted-foreground">
@@ -296,6 +302,36 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
             </CardContent>
           </Card>
         </div>
+
+        {/* Timeline Charts */}
+        {replayData?.trackerEvents && replayData?.players && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Game Statistics Timeline</CardTitle>
+              <CardDescription>Track key metrics throughout the match</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <WorkerTimelineChart
+                trackerEvents={replayData.trackerEvents}
+                players={replayData.players}
+                syncedTime={syncedTime}
+                onTimeChange={setSyncedTime}
+              />
+              <ArmyValueTimelineChart
+                trackerEvents={replayData.trackerEvents}
+                players={replayData.players}
+                syncedTime={syncedTime}
+                onTimeChange={setSyncedTime}
+              />
+              <MineralCollectionRateChart
+                trackerEvents={replayData.trackerEvents}
+                players={replayData.players}
+                syncedTime={syncedTime}
+                onTimeChange={setSyncedTime}
+              />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
