@@ -11,6 +11,7 @@ import { WorkerTimelineChart } from '@/components/WorkerTimelineChart';
 import { ArmyValueTimelineChart } from '@/components/ArmyValueTimelineChart';
 import { MineralCollectionRateChart } from '@/components/MineralCollectionRateChart';
 import { BuildOrderCard } from '@/components/BuildOrderCard';
+import { ArmyCompositionCard } from '@/components/ArmyCompositionCard';
 import { getPlayerColor } from '@/lib/player-colors';
 import type { TrackerEvent, GameEvent, MessageEvent, Player, ReplayHeader, ReplayDetails } from 'sc2ts';
 
@@ -261,24 +262,20 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
           />
         )}
 
+        {/* Army Composition */}
+        {replayData?.trackerEvents && replayData?.players && (
+          <ArmyCompositionCard
+            trackerEvents={replayData.trackerEvents}
+            players={replayData.players}
+          />
+        )}
+
         {/* Analysis Sections (Mock) */}
         <div className="grid md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
               <CardTitle>Economy Analysis</CardTitle>
               <CardDescription>Resource collection and spending</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                Coming soon...
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Army Composition</CardTitle>
-              <CardDescription>Units built during the game</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center py-8 text-muted-foreground">
