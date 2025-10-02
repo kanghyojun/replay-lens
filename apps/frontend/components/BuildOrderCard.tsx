@@ -1,34 +1,113 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Switch } from '@/components/ui/switch';
 import { ViewAllButton } from '@/components/ViewAllButton';
 import { UnitIcon } from '@/components/UnitIcon';
 import { extractBuildOrder } from '@/lib/build-order';
+import { extractSpellCasting, getSpellDisplayName, getSpellAbbreviation, type SpellCast } from '@/lib/spell-casting';
 import { getPlayerColor } from '@/lib/player-colors';
-import type { TrackerEvent, Player } from 'sc2ts';
+import type { TrackerEvent, GameEvent, Player } from 'sc2ts';
 
 interface BuildOrderCardProps {
   trackerEvents: TrackerEvent[];
+  gameEvents: GameEvent[];
   players: Player[];
 }
 
-export function BuildOrderCard({ trackerEvents, players }: BuildOrderCardProps) {
-  const timeline = extractBuildOrder(trackerEvents, players);
+export function BuildOrderCard({ trackerEvents, gameEvents, players }: BuildOrderCardProps) {
+  const buildOrderTimeline = extractBuildOrder(trackerEvents, players);
   const [showAll, setShowAll] = useState(false);
+  const [showSpells, setShowSpells] = useState(true);
+  const [selectedSpell, setSelectedSpell] = useState<SpellCast | null>(null);
+
+  // Extract spell casting timeline
+  const spellTimeline = useMemo(() => {
+    return extractSpellCasting(gameEvents, trackerEvents);
+  }, [gameEvents, trackerEvents]);
+
+  // Merge build order timeline with spell timeline
+  const timeline = useMemo(() => {
+    const merged = new Map<string, typeof buildOrderTimeline[0]>();
+
+    // Add all build order entries
+    buildOrderTimeline.forEach(entry => {
+      merged.set(entry.timeLabel, entry);
+    });
+
+    // Add spell timeline entries (or merge with existing)
+    spellTimeline.forEach(spellEntry => {
+      if (merged.has(spellEntry.timeLabel)) {
+        // Entry already exists, we'll handle spells separately in rendering
+      } else {
+        // Create new entry for spell-only time slot
+        merged.set(spellEntry.timeLabel, {
+          time: spellEntry.time,
+          timeLabel: spellEntry.timeLabel,
+          players: new Map(),
+        });
+      }
+    });
+
+    // Convert to sorted array
+    return Array.from(merged.values()).sort((a, b) => a.time - b.time);
+  }, [buildOrderTimeline, spellTimeline]);
 
   // Player IDs in tracker events are 1-based indices
   const playerIds = players.map((_, idx) => idx + 1);
 
+  // Helper function to get spells for a specific time bucket and player
+  const getSpellsForTimeAndPlayer = (timeLabel: string, playerId: number) => {
+    const spellBucket = spellTimeline.find(bucket => bucket.timeLabel === timeLabel);
+    const spells = spellBucket?.players.get(playerId) || [];
+
+    if (spells.length > 0) {
+      console.log(`Found ${spells.length} spells at ${timeLabel} for player ${playerId}:`, spells);
+    }
+
+    return spells;
+  };
+
+  // Filter out timeline slots that would be completely empty
+  const filteredTimeline = useMemo(() => {
+    return timeline.filter(timeSlot => {
+      // Check if any player has content at this time
+      for (const playerId of playerIds) {
+        const playerItems = timeSlot.players.get(playerId);
+        const spells = showSpells ? getSpellsForTimeAndPlayer(timeSlot.timeLabel, playerId) : [];
+
+        const hasBuildings = playerItems && playerItems.buildings.size > 0;
+        const hasUnits = playerItems && playerItems.units.size > 0;
+        const hasUpgrades = playerItems && playerItems.upgrades.size > 0;
+        const hasSpells = spells.length > 0;
+
+        if (hasBuildings || hasUnits || hasUpgrades || hasSpells) {
+          return true;
+        }
+      }
+      return false;
+    });
+  }, [timeline, showSpells, playerIds, spellTimeline]);
+
   const INITIAL_ROWS = 8;
-  const displayedTimeline = showAll ? timeline : timeline.slice(0, INITIAL_ROWS);
-  const hasMore = timeline.length > INITIAL_ROWS;
+  const displayedTimeline = showAll ? filteredTimeline : filteredTimeline.slice(0, INITIAL_ROWS);
+  const hasMore = filteredTimeline.length > INITIAL_ROWS;
 
   console.log('Players:', players);
   console.log('Player IDs:', playerIds);
   console.log('Timeline length:', timeline.length);
+  console.log('Spell timeline length:', spellTimeline.length);
+  console.log('Show spells enabled:', showSpells);
+  console.log('Displayed timeline count:', displayedTimeline.length);
+  console.log('Displayed timeline labels:', displayedTimeline.map(t => t.timeLabel));
+  if (spellTimeline.length > 0) {
+    console.log('First spell timeline bucket:', spellTimeline[0]);
+    console.log('Spell timeline player IDs:', Array.from(spellTimeline[0].players.keys()));
+    console.log('All spell timeline labels:', spellTimeline.map(t => t.timeLabel));
+  }
 
   if (timeline.length === 0) {
     return (
@@ -49,8 +128,22 @@ export function BuildOrderCard({ trackerEvents, players }: BuildOrderCardProps) 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Build Order</CardTitle>
-        <CardDescription>Units, buildings, and upgrades timeline</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Build Order</CardTitle>
+            <CardDescription>Units, buildings, and upgrades timeline</CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <label htmlFor="show-spells" className="text-sm font-medium cursor-pointer">
+              Show Spell Casting
+            </label>
+            <Switch
+              id="show-spells"
+              checked={showSpells}
+              onCheckedChange={setShowSpells}
+            />
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <TooltipProvider>
@@ -73,25 +166,37 @@ export function BuildOrderCard({ trackerEvents, players }: BuildOrderCardProps) 
               </TableRow>
             </TableHeader>
             <TableBody>
-              {displayedTimeline.map((timeSlot, idx) => (
+              {displayedTimeline.map((timeSlot, idx) => {
+                // Debug log for 0:34
+                if (timeSlot.timeLabel === '0:34') {
+                  console.log('Rendering 0:34 row, checking for spells...');
+                  playerIds.forEach(pid => {
+                    const spells = showSpells ? getSpellsForTimeAndPlayer(timeSlot.timeLabel, pid) : [];
+                    console.log(`  Player ${pid}: ${spells.length} spells`);
+                  });
+                }
+
+                return (
                 <TableRow key={idx}>
                   <TableCell className="font-mono font-bold align-top">
                     {timeSlot.timeLabel}
                   </TableCell>
                   {playerIds.map((playerId) => {
                     const playerItems = timeSlot.players.get(playerId);
+                    const spells = showSpells ? getSpellsForTimeAndPlayer(timeSlot.timeLabel, playerId) : [];
 
-                    if (!playerItems || (playerItems.buildings.size === 0 && playerItems.units.size === 0 && playerItems.upgrades.size === 0)) {
+                    const hasBuildings = playerItems && playerItems.buildings.size > 0;
+                    const hasUnits = playerItems && playerItems.units.size > 0;
+                    const hasUpgrades = playerItems && playerItems.upgrades.size > 0;
+                    const hasSpells = spells.length > 0;
+
+                    if (!hasBuildings && !hasUnits && !hasUpgrades && !hasSpells) {
                       return (
                         <TableCell key={playerId} className="align-top">
                           <div className="min-h-[60px]" />
                         </TableCell>
                       );
                     }
-
-                    const hasBuildings = playerItems.buildings.size > 0;
-                    const hasUnits = playerItems.units.size > 0;
-                    const hasUpgrades = playerItems.upgrades.size > 0;
 
                     return (
                       <TableCell key={playerId} className="align-top">
@@ -101,7 +206,7 @@ export function BuildOrderCard({ trackerEvents, players }: BuildOrderCardProps) 
                             <div>
                               <div className="text-xs font-semibold text-muted-foreground mb-1">Buildings</div>
                               <div className="flex flex-wrap gap-1">
-                                {Array.from(playerItems.buildings.entries()).map(([buildingName, count]) => (
+                                {Array.from(playerItems!.buildings.entries()).map(([buildingName, count]) => (
                                   <UnitIcon key={buildingName} name={buildingName} count={count} type="building" />
                                 ))}
                               </div>
@@ -113,7 +218,7 @@ export function BuildOrderCard({ trackerEvents, players }: BuildOrderCardProps) 
                             <div>
                               <div className="text-xs font-semibold text-muted-foreground mb-1">Units</div>
                               <div className="flex flex-wrap gap-1">
-                                {Array.from(playerItems.units.entries()).map(([unitName, count]) => (
+                                {Array.from(playerItems!.units.entries()).map(([unitName, count]) => (
                                   <UnitIcon key={unitName} name={unitName} count={count} type="unit" />
                                 ))}
                               </div>
@@ -125,8 +230,57 @@ export function BuildOrderCard({ trackerEvents, players }: BuildOrderCardProps) 
                             <div>
                               <div className="text-xs font-semibold text-muted-foreground mb-1">Upgrades</div>
                               <div className="flex flex-wrap gap-1">
-                                {Array.from(playerItems.upgrades.entries()).map(([upgradeName, count]) => (
+                                {Array.from(playerItems!.upgrades.entries()).map(([upgradeName, count]) => (
                                   <UnitIcon key={upgradeName} name={upgradeName} count={count} type="upgrade" />
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Spell Casting */}
+                          {hasSpells && (
+                            <div>
+                              <div className="text-xs font-semibold text-muted-foreground mb-1">Spells</div>
+                              <div className="flex flex-wrap gap-1">
+                                {spells.map((spell, spellIdx) => (
+                                  <div key={spellIdx} className="relative">
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <div
+                                          className={`w-[60px] h-[60px] flex items-center justify-center text-xs font-bold rounded border ${
+                                            spell.targetType === 'unit' || spell.targetType === 'point'
+                                              ? 'cursor-pointer hover:bg-purple-500/20'
+                                              : ''
+                                          } bg-purple-500/10 text-purple-600 border-purple-500/50 transition-colors`}
+                                          onClick={() => {
+                                            if (spell.targetType === 'unit' || spell.targetType === 'point') {
+                                              setSelectedSpell(selectedSpell?.spellName === spell.spellName && selectedSpell?.gameLoop === spell.gameLoop ? null : spell);
+                                            }
+                                          }}
+                                        >
+                                          {getSpellAbbreviation(spell.spellName)}
+                                        </div>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>{getSpellDisplayName(spell.spellName)}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+
+                                    {/* Target overlay */}
+                                    {selectedSpell?.gameLoop === spell.gameLoop &&
+                                     selectedSpell?.spellName === spell.spellName &&
+                                     spell.targetType === 'unit' &&
+                                     spell.targetUnitName && (
+                                      <div className="absolute left-[68px] top-0 flex items-center gap-1 z-10 animate-in fade-in slide-in-from-left-2 duration-200">
+                                        <span className="text-lg text-purple-600">→</span>
+                                        <UnitIcon
+                                          name={spell.targetUnitName}
+                                          count={1}
+                                          type="building"
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
                                 ))}
                               </div>
                             </div>
@@ -136,7 +290,8 @@ export function BuildOrderCard({ trackerEvents, players }: BuildOrderCardProps) 
                     );
                   })}
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         </div>
@@ -146,10 +301,11 @@ export function BuildOrderCard({ trackerEvents, players }: BuildOrderCardProps) 
           <ViewAllButton
             showAll={showAll}
             onToggle={() => setShowAll(!showAll)}
-            totalCount={timeline.length}
+            totalCount={filteredTimeline.length}
           />
         )}
       </CardContent>
+
     </Card>
   );
 }

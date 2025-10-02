@@ -258,9 +258,10 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
         </Card>
 
         {/* Build Order */}
-        {replayData?.trackerEvents && replayData?.players && (
+        {replayData?.trackerEvents && replayData?.gameEvents && replayData?.players && (
           <BuildOrderCard
             trackerEvents={replayData.trackerEvents}
+            gameEvents={replayData.gameEvents}
             players={replayData.players}
           />
         )}
