@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { extractBuildOrder, abbreviateUnitName, abbreviateUpgradeName } from '@/lib/build-order';
+import { UnitIcon } from '@/components/UnitIcon';
+import { extractBuildOrder } from '@/lib/build-order';
 import { getPlayerColor } from '@/lib/player-colors';
 import type { TrackerEvent, Player } from 'sc2ts';
 
@@ -102,23 +103,7 @@ export function BuildOrderCard({ trackerEvents, players }: BuildOrderCardProps) 
                               <div className="text-xs font-semibold text-muted-foreground mb-1">Buildings</div>
                               <div className="flex flex-wrap gap-1">
                                 {Array.from(playerItems.buildings.entries()).map(([buildingName, count]) => (
-                                  <Tooltip key={buildingName}>
-                                    <TooltipTrigger asChild>
-                                      <div className="relative w-[60px] h-[60px] border border-amber-600 bg-amber-900/30 rounded flex items-center justify-center cursor-help hover:bg-amber-900/50 transition-colors">
-                                        <span className="text-sm font-bold text-amber-100">
-                                          {abbreviateUnitName(buildingName)}
-                                        </span>
-                                        {count > 1 && (
-                                          <span className="absolute bottom-0 right-0 bg-amber-600 text-white text-xs font-bold px-1 rounded-tl">
-                                            {count}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>{buildingName} {count > 1 ? `(×${count})` : ''}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
+                                  <UnitIcon key={buildingName} name={buildingName} count={count} type="building" />
                                 ))}
                               </div>
                             </div>
@@ -130,23 +115,7 @@ export function BuildOrderCard({ trackerEvents, players }: BuildOrderCardProps) 
                               <div className="text-xs font-semibold text-muted-foreground mb-1">Units</div>
                               <div className="flex flex-wrap gap-1">
                                 {Array.from(playerItems.units.entries()).map(([unitName, count]) => (
-                                  <Tooltip key={unitName}>
-                                    <TooltipTrigger asChild>
-                                      <div className="relative w-[60px] h-[60px] border border-blue-600 bg-blue-900/30 rounded flex items-center justify-center cursor-help hover:bg-blue-900/50 transition-colors">
-                                        <span className="text-sm font-bold text-blue-100">
-                                          {abbreviateUnitName(unitName)}
-                                        </span>
-                                        {count > 1 && (
-                                          <span className="absolute bottom-0 right-0 bg-blue-600 text-white text-xs font-bold px-1 rounded-tl">
-                                            {count}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>{unitName} {count > 1 ? `(×${count})` : ''}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
+                                  <UnitIcon key={unitName} name={unitName} count={count} type="unit" />
                                 ))}
                               </div>
                             </div>
@@ -158,23 +127,7 @@ export function BuildOrderCard({ trackerEvents, players }: BuildOrderCardProps) 
                               <div className="text-xs font-semibold text-muted-foreground mb-1">Upgrades</div>
                               <div className="flex flex-wrap gap-1">
                                 {Array.from(playerItems.upgrades.entries()).map(([upgradeName, count]) => (
-                                  <Tooltip key={upgradeName}>
-                                    <TooltipTrigger asChild>
-                                      <div className="relative w-[60px] h-[60px] border border-green-600 bg-green-900/30 rounded flex items-center justify-center cursor-help hover:bg-green-900/50 transition-colors">
-                                        <span className="text-sm font-bold text-green-100">
-                                          {abbreviateUpgradeName(upgradeName)}
-                                        </span>
-                                        {count > 1 && (
-                                          <span className="absolute bottom-0 right-0 bg-green-600 text-white text-xs font-bold px-1 rounded-tl">
-                                            {count}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>{upgradeName} {count > 1 ? `(×${count})` : ''}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
+                                  <UnitIcon key={upgradeName} name={upgradeName} count={count} type="upgrade" />
                                 ))}
                               </div>
                             </div>

@@ -3,10 +3,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { UnitIcon } from '@/components/UnitIcon';
 import { extractBattles } from '@/lib/battle';
 import { getPlayerColor } from '@/lib/player-colors';
-import { abbreviateUnitName } from '@/lib/build-order';
 import type { TrackerEvent, Player } from 'sc2ts';
 import { ChevronDown, ChevronUp, Swords } from 'lucide-react';
 import { useState } from 'react';
@@ -125,23 +125,7 @@ export function BattleCard({ trackerEvents, players }: BattleCardProps) {
                                 </div>
                                 <div className="flex flex-wrap gap-1">
                                   {Array.from(buildingCounts.entries()).map(([buildingName, count]) => (
-                                    <Tooltip key={buildingName}>
-                                      <TooltipTrigger asChild>
-                                        <div className="relative w-[60px] h-[60px] border border-amber-600 bg-amber-900/30 rounded flex items-center justify-center cursor-help hover:bg-amber-900/50 transition-colors">
-                                          <span className="text-sm font-bold text-amber-100">
-                                            {abbreviateUnitName(buildingName)}
-                                          </span>
-                                          {count > 1 && (
-                                            <span className="absolute bottom-0 right-0 bg-amber-600 text-white text-xs font-bold px-1 rounded-tl">
-                                              {count}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>{buildingName} {count > 1 ? `(×${count})` : ''}</p>
-                                      </TooltipContent>
-                                    </Tooltip>
+                                    <UnitIcon key={buildingName} name={buildingName} count={count} type="building" />
                                   ))}
                                 </div>
                               </div>
@@ -155,23 +139,7 @@ export function BattleCard({ trackerEvents, players }: BattleCardProps) {
                                 </div>
                                 <div className="flex flex-wrap gap-1">
                                   {Array.from(unitCounts.entries()).map(([unitName, count]) => (
-                                    <Tooltip key={unitName}>
-                                      <TooltipTrigger asChild>
-                                        <div className="relative w-[60px] h-[60px] border border-blue-600 bg-blue-900/30 rounded flex items-center justify-center cursor-help hover:bg-blue-900/50 transition-colors">
-                                          <span className="text-sm font-bold text-blue-100">
-                                            {abbreviateUnitName(unitName)}
-                                          </span>
-                                          {count > 1 && (
-                                            <span className="absolute bottom-0 right-0 bg-blue-600 text-white text-xs font-bold px-1 rounded-tl">
-                                              {count}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>{unitName} {count > 1 ? `(×${count})` : ''}</p>
-                                      </TooltipContent>
-                                    </Tooltip>
+                                    <UnitIcon key={unitName} name={unitName} count={count} type="unit" />
                                   ))}
                                 </div>
                               </div>

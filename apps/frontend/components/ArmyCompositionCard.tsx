@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { UnitIcon } from '@/components/UnitIcon';
 import { extractArmyComposition } from '@/lib/army-composition';
-import { abbreviateUnitName } from '@/lib/build-order';
 import { getPlayerColor } from '@/lib/player-colors';
 import type { TrackerEvent, Player } from 'sc2ts';
 
@@ -90,23 +90,7 @@ export function ArmyCompositionCard({ trackerEvents, players }: ArmyCompositionC
                         <TableCell key={playerId} className="align-top">
                           <div className="flex flex-wrap gap-1">
                             {Array.from(units.entries()).map(([unitName, count]) => (
-                              <Tooltip key={unitName}>
-                                <TooltipTrigger asChild>
-                                  <div className="relative w-[60px] h-[60px] border border-blue-600 bg-blue-900/30 rounded flex items-center justify-center cursor-help hover:bg-blue-900/50 transition-colors">
-                                    <span className="text-sm font-bold text-blue-100">
-                                      {abbreviateUnitName(unitName)}
-                                    </span>
-                                    {count > 1 && (
-                                      <span className="absolute bottom-0 right-0 bg-blue-600 text-white text-xs font-bold px-1 rounded-tl">
-                                        {count}
-                                      </span>
-                                    )}
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>{unitName} (×{count})</p>
-                                </TooltipContent>
-                              </Tooltip>
+                              <UnitIcon key={unitName} name={unitName} count={count} type="unit" />
                             ))}
                           </div>
                         </TableCell>
