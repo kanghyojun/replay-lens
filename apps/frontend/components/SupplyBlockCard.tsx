@@ -2,9 +2,12 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import { extractSupplyBlocks } from '@/lib/supply-block';
 import { getPlayerColor } from '@/lib/player-colors';
 import type { TrackerEvent, Player } from 'sc2ts';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
 
 interface SupplyBlockCardProps {
   trackerEvents: TrackerEvent[];
@@ -13,6 +16,7 @@ interface SupplyBlockCardProps {
 
 export function SupplyBlockCard({ trackerEvents, players }: SupplyBlockCardProps) {
   const timelines = extractSupplyBlocks(trackerEvents, players);
+  const [showAll, setShowAll] = useState(false);
 
   // Player IDs in tracker events are 1-based indices
   const playerIds = players.map((_, idx) => idx + 1);
@@ -24,6 +28,10 @@ export function SupplyBlockCard({ trackerEvents, players }: SupplyBlockCardProps
       playerId: timeline.playerId,
     }))
   ).sort((a, b) => a.startTime - b.startTime);
+
+  const INITIAL_ROWS = 8;
+  const displayedBlocks = showAll ? allBlocks : allBlocks.slice(0, INITIAL_ROWS);
+  const hasMore = allBlocks.length > INITIAL_ROWS;
 
   if (allBlocks.length === 0) {
     return (
@@ -67,7 +75,7 @@ export function SupplyBlockCard({ trackerEvents, players }: SupplyBlockCardProps
               </TableRow>
             </TableHeader>
             <TableBody>
-              {allBlocks.map((block, idx) => (
+              {displayedBlocks.map((block, idx) => (
                 <TableRow key={idx}>
                   <TableCell className="font-mono font-bold align-top">
                     {block.startTimeLabel}
@@ -99,6 +107,28 @@ export function SupplyBlockCard({ trackerEvents, players }: SupplyBlockCardProps
             </TableBody>
           </Table>
         </div>
+
+        {hasMore && (
+          <div className="mt-4 flex justify-center">
+            <Button
+              variant="outline"
+              onClick={() => setShowAll(!showAll)}
+              className="gap-2"
+            >
+              {showAll ? (
+                <>
+                  Show Less
+                  <ChevronUp className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  View All ({allBlocks.length} blocks)
+                  <ChevronDown className="h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </div>
+        )}
 
         {/* Summary */}
         <div className="mt-6 pt-4 border-t">
