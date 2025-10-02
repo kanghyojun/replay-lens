@@ -229,7 +229,10 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
                         </p>
                       </div>
                     </div>
-                    <Badge variant={isWin(player.result) ? "default" : "destructive"}>
+                    <Badge
+                      variant="outline"
+                      className={isWin(player.result) ? "bg-green-500/10 text-green-600 border-green-500/50" : "bg-red-500/10 text-red-600 border-red-500/50"}
+                    >
                       {getResultText(player.result)}
                     </Badge>
                   </div>
