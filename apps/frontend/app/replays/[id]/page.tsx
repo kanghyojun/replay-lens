@@ -10,6 +10,7 @@ import { ChevronLeft, Users, Trophy, Clock, Map } from 'lucide-react';
 import { WorkerTimelineChart } from '@/components/WorkerTimelineChart';
 import { ArmyValueTimelineChart } from '@/components/ArmyValueTimelineChart';
 import { MineralCollectionRateChart } from '@/components/MineralCollectionRateChart';
+import { BuildOrderCard } from '@/components/BuildOrderCard';
 import { getPlayerColor } from '@/lib/player-colors';
 import type { TrackerEvent, GameEvent, MessageEvent, Player, ReplayHeader, ReplayDetails } from 'sc2ts';
 
@@ -251,6 +252,14 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
             </div>
           </CardContent>
         </Card>
+
+        {/* Build Order */}
+        {replayData?.trackerEvents && replayData?.players && (
+          <BuildOrderCard
+            trackerEvents={replayData.trackerEvents}
+            players={replayData.players}
+          />
+        )}
 
         {/* Analysis Sections (Mock) */}
         <div className="grid md:grid-cols-2 gap-6">
