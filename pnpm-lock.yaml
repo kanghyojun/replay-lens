@@ -57,8 +57,8 @@ importers:
         specifier: 19.1.0
         version: 19.1.0(react@19.1.0)
       sc2ts:
-        specifier: ^0.1.6
-        version: 0.1.6
+        specifier: ^0.2.0
+        version: 0.2.0
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3
@@ -3035,6 +3035,10 @@ packages:
 
   sc2ts@0.1.6:
     resolution: {integrity: sha512-Sh4Edyg//SHeIjGvzTE/gjgFoA08ZwmtCASyQjsC3Q8H+Oo86ie+hMFi5+0aR13pS7Vbq8lIxENzc+VyTbpVlQ==}
+    hasBin: true
+
+  sc2ts@0.2.0:
+    resolution: {integrity: sha512-APhKZbTd9QgMb7IyCVf3fgH9bRZiNetWwQsGFsSTBc0hDCohDW+/3VOYLjQiwqDqJK67wz/LgDFAmIYSm3cnuw==}
     hasBin: true
 
   scheduler@0.26.0:
@@ -6039,6 +6043,16 @@ snapshots:
       is-regex: 1.2.1
 
   sc2ts@0.1.6:
+    dependencies:
+      '@logtape/logtape': 1.1.1
+      '@optique/core': 0.4.4
+      '@optique/run': 0.4.4
+      compressjs: 1.0.3
+      fflate: 0.8.2
+      seek-bzip: 2.0.0
+      zod: 4.1.11
+
+  sc2ts@0.2.0:
     dependencies:
       '@logtape/logtape': 1.1.1
       '@optique/core': 0.4.4
