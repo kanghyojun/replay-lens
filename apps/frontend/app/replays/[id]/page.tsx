@@ -13,6 +13,7 @@ import { MineralCollectionRateChart } from '@/components/MineralCollectionRateCh
 import { BuildOrderCard } from '@/components/BuildOrderCard';
 import { ArmyCompositionCard } from '@/components/ArmyCompositionCard';
 import { SupplyBlockCard } from '@/components/SupplyBlockCard';
+import { EconomyAnalysisCard } from '@/components/EconomyAnalysisCard';
 import { getPlayerColor } from '@/lib/player-colors';
 import type { TrackerEvent, GameEvent, MessageEvent, Player, ReplayHeader, ReplayDetails } from 'sc2ts';
 
@@ -279,19 +280,16 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
           />
         )}
 
+        {/* Economy Analysis */}
+        {replayData?.trackerEvents && replayData?.players && (
+          <EconomyAnalysisCard
+            trackerEvents={replayData.trackerEvents}
+            players={replayData.players}
+          />
+        )}
+
         {/* Analysis Sections (Mock) */}
         <div className="grid md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Economy Analysis</CardTitle>
-              <CardDescription>Resource collection and spending</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                Coming soon...
-              </div>
-            </CardContent>
-          </Card>
 
           <Card>
             <CardHeader>
