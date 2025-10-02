@@ -29,19 +29,23 @@ export async function GET(request: NextRequest) {
     const userId = sessionData.user.id;
 
     // Helper function to convert BigInt and Date to string recursively
-    const serializeBigInt = (obj: any): any => {
-      if (obj === null || obj === undefined) return obj;
+    type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+    const serializeBigInt = (obj: unknown): JsonValue => {
+      if (obj === null || obj === undefined) return null;
       if (typeof obj === 'bigint') return obj.toString();
       if (obj instanceof Date) return obj.toISOString();
+      if (typeof obj === 'boolean') return obj;
+      if (typeof obj === 'number') return obj;
+      if (typeof obj === 'string') return obj;
       if (Array.isArray(obj)) return obj.map(serializeBigInt);
       if (typeof obj === 'object') {
-        const serialized: any = {};
+        const serialized: { [key: string]: JsonValue } = {};
         for (const key in obj) {
-          serialized[key] = serializeBigInt(obj[key]);
+          serialized[key] = serializeBigInt((obj as Record<string, unknown>)[key]);
         }
         return serialized;
       }
-      return obj;
+      return null;
     };
 
     // Fetch replays from database

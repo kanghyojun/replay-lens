@@ -22,6 +22,9 @@ export const replaysTable = pgTable("replays", {
   replayHeader: jsonb(), // Raw header data
   replayDetails: jsonb(), // Player details, game details
   players: jsonb(), // Array of players
+  gameEvents: jsonb(), // Game events from replay
+  trackerEvents: jsonb(), // Tracker events from replay
+  messageEvents: jsonb(), // Message events from replay
 
   // Game result
   winner: varchar({ length: 255 }), // Player name who won

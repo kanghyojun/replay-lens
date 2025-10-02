@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { readFile } from 'fs/promises';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
 import { SC2Replay } from 'sc2ts';
+import type { ReplayData, ReplayDetails, ReplayHeader, TrackerEvent, GameEvent, MessageEvent, Player } from 'sc2ts';
 import { db } from '@/lib/db';
 import { replaysTable } from '@/lib/db/schema';
 
@@ -55,7 +53,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Parse replay using sc2ts
-    let replay;
+    let replay: ReplayData;
     try {
       replay = SC2Replay.fromBuffer(buffer);
     } catch (error) {
@@ -67,52 +65,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Helper function to sanitize data: convert BigInt to string and remove null bytes
-    const sanitizeData = (obj: any): any => {
-      if (obj === null || obj === undefined) return obj;
+    type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+    const sanitizeData = (obj: unknown): JsonValue => {
+      if (obj === null || obj === undefined) return null;
       if (typeof obj === 'bigint') return obj.toString();
       if (typeof obj === 'string') {
         // Remove all null bytes and other problematic Unicode characters
         return obj.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
       }
+      if (typeof obj === 'boolean') return obj;
+      if (typeof obj === 'number') return obj;
       if (Array.isArray(obj)) return obj.map(sanitizeData);
       if (typeof obj === 'object') {
-        const sanitized: any = {};
+        const sanitized: { [key: string]: JsonValue } = {};
         for (const key in obj) {
-          sanitized[key] = sanitizeData(obj[key]);
+          sanitized[key] = sanitizeData((obj as Record<string, unknown>)[key]);
         }
         return sanitized;
       }
-      return obj;
+      return null;
     };
-
-    // Extract replay data
-    const replayData = sanitizeData({
-      filename: file.name,
-      fileSize: file.size,
-      matchDate: replay.replayDetails?.timeUTC,
-      mapName: replay.replayDetails?.title,
-      gameLength: replay.gameLength,
-      winner: replay.winner?.name,
-      players: replay.players.map(p => ({
-        name: p.name,
-        race: p.race,
-        teamId: p.teamId,
-        color: p.color,
-        result: p.result,
-      })),
-      replayHeader: replay.replayHeader,
-      replayDetails: replay.replayDetails,
-    });
-
-    // Save replay file to disk
-    const uploadsDir = path.join(process.cwd(), 'uploads', 'replays', userId);
-    await mkdir(uploadsDir, { recursive: true });
-
-    const timestamp = Date.now();
-    const filename = `${timestamp}_${file.name}`;
-    const filePath = path.join(uploadsDir, filename);
-
-    await writeFile(filePath, buffer);
 
     // Determine game type from number of players
     const playersPerTeam = new Map<number, number>();
@@ -144,9 +116,11 @@ export async function POST(request: NextRequest) {
         color: p.color,
         result: p.result,
       }))),
+      gameEvents: sanitizeData(replay.gameEvents),
+      trackerEvents: sanitizeData(replay.trackerEvents),
+      messageEvents: sanitizeData(replay.messageEvents),
       winner: replay.winner?.name || null,
       gameLength: replay.gameLength || null,
-      filePath,
       fileSize: file.size,
     }).returning();
 
