@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const endpoint = searchParams.get('endpoint');
 
-    let data: any;
+    let data: unknown;
     let filename: string;
 
     // 내 계정 정보로 기본값 설정

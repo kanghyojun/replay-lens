@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { blizzardAPI } from '../../../lib/blizzard-api';
 import fs from 'fs/promises';
 import path from 'path';
-import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -14,7 +13,7 @@ export async function GET(request: NextRequest) {
   const ladderId = searchParams.get('ladderId');
 
   try {
-    let data: any;
+    let data: unknown;
     let filename: string;
 
     switch (endpoint) {
@@ -98,7 +97,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { endpoint, params, saveResults = true } = body;
 
-    let data: any;
+    let data: unknown;
     let filename: string;
 
     switch (endpoint) {

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { SC2Replay } from 'sc2ts';
-import type { ReplayData, ReplayDetails, ReplayHeader, TrackerEvent, GameEvent, MessageEvent, Player } from 'sc2ts';
 import { db } from '@/lib/db';
 import { replaysTable } from '@/lib/db/schema';
+import { analyzeReplay } from '@/lib/replay-analysis';
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Parse replay using sc2ts
-    let replay: ReplayData;
+    let replay: SC2Replay;
     try {
       replay = SC2Replay.fromBuffer(buffer);
     } catch (error) {
@@ -100,11 +100,20 @@ export async function POST(request: NextRequest) {
       cacheHandles: undefined,
     } : null;
 
+    // Perform replay analysis
+    console.log('Analyzing replay...');
+    const analysis = analyzeReplay(
+      replay.trackerEvents,
+      replay.gameEvents,
+      replay.players
+    );
+    console.log('Analysis complete!');
+
     // Save to database
     const [insertedReplay] = await db.insert(replaysTable).values({
       userId: userId.toString(),
       filename: file.name,
-      matchDate: replay.replayDetails?.timeUTC ? BigInt(replay.replayDetails.timeUTC) : null,
+      matchDate: replay.replayDetails?.timeUTC ? Number(replay.replayDetails.timeUTC) : null,
       mapName: replay.replayDetails?.title || null,
       gameType,
       replayHeader: sanitizeData(replay.replayHeader),
@@ -119,6 +128,7 @@ export async function POST(request: NextRequest) {
       gameEvents: sanitizeData(replay.gameEvents),
       trackerEvents: sanitizeData(replay.trackerEvents),
       messageEvents: sanitizeData(replay.messageEvents),
+      analysis: sanitizeData(analysis), // Store computed analysis
       winner: replay.winner?.name || null,
       gameLength: replay.gameLength || null,
       fileSize: file.size,

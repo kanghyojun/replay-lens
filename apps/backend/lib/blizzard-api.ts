@@ -25,6 +25,8 @@ interface SC2MatchesResponse {
   matches: SC2Match[];
 }
 
+// LadderTeam interface - currently unused but kept for future use
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface LadderTeam {
   teamMembers: Array<{
     character: {
@@ -173,7 +175,7 @@ class BlizzardAPI {
     });
   }
 
-  private async fetchJSON<T = any>(endpoint: string): Promise<T> {
+  private async fetchJSON<T = unknown>(endpoint: string): Promise<T> {
     const response = await this.fetchAPI(endpoint);
 
     if (!response.ok) {
@@ -227,58 +229,58 @@ class BlizzardAPI {
   }
 
   // === Legacy APIs ===
-  async getLegacyProfile(regionId: number, realmId: number, profileId: number): Promise<any> {
+  async getLegacyProfile(regionId: number, realmId: number, profileId: number): Promise<unknown> {
     return this.fetchJSON(`/sc2/legacy/profile/${regionId}/${realmId}/${profileId}?locale=en_US`);
   }
 
-  async getLegacyLadders(regionId: number, realmId: number, profileId: number): Promise<any> {
+  async getLegacyLadders(regionId: number, realmId: number, profileId: number): Promise<unknown> {
     return this.fetchJSON(`/sc2/legacy/profile/${regionId}/${realmId}/${profileId}/ladders?locale=en_US`);
   }
 
-  async getLegacyMatches(regionId: number, realmId: number, profileId: number): Promise<any> {
+  async getLegacyMatches(regionId: number, realmId: number, profileId: number): Promise<unknown> {
     return this.fetchJSON(`/sc2/legacy/profile/${regionId}/${realmId}/${profileId}/matches?locale=en_US`);
   }
 
-  async getLegacyLadder(regionId: number, ladderId: string): Promise<any> {
+  async getLegacyLadder(regionId: number, ladderId: string): Promise<unknown> {
     return this.fetchJSON(`/sc2/legacy/ladder/${regionId}/${ladderId}?locale=en_US`);
   }
 
-  async getLegacyAchievements(regionId: number): Promise<any> {
+  async getLegacyAchievements(regionId: number): Promise<unknown> {
     return this.fetchJSON(`/sc2/legacy/data/achievements/${regionId}?locale=en_US`);
   }
 
-  async getLegacyRewards(regionId: number): Promise<any> {
+  async getLegacyRewards(regionId: number): Promise<unknown> {
     return this.fetchJSON(`/sc2/legacy/data/rewards/${regionId}?locale=en_US`);
   }
 
   // === Game Data APIs ===
-  async getLeagueData(seasonId: number, queueId: number, teamType: number, leagueId: number): Promise<any> {
+  async getLeagueData(seasonId: number, queueId: number, teamType: number, leagueId: number): Promise<unknown> {
     return this.fetchJSON(`/data/sc2/league/${seasonId}/${queueId}/${teamType}/${leagueId}?locale=en_US`);
   }
 
-  async getGrandmasterLeaderboard(regionId: number): Promise<any> {
+  async getGrandmasterLeaderboard(regionId: number): Promise<unknown> {
     return this.fetchJSON(`/data/sc2/ladder/grandmaster/${regionId}?locale=en_US`);
   }
 
-  async getSeasonData(regionId: number): Promise<any> {
+  async getSeasonData(regionId: number): Promise<unknown> {
     const regionString = this.getRegionString(regionId);
     return this.fetchJSON(`/sc2/ladder/season/${regionId}?region=${regionString}&locale=en_US`);
   }
 
-  async getRewards(regionId: number): Promise<any> {
+  async getRewards(regionId: number): Promise<unknown> {
     return this.fetchJSON(`/data/sc2/rewards/${regionId}?locale=en_US`);
   }
 
   // === Community APIs (추가) ===
-  async getStaticProfile(regionId: number, realmId: number, profileId: number): Promise<any> {
+  async getStaticProfile(regionId: number, realmId: number, profileId: number): Promise<unknown> {
     return this.fetchJSON(`/sc2/static/profile/${regionId}/${realmId}/${profileId}?locale=en_US`);
   }
 
-  async getMetadataProfile(regionId: number, realmId: number, profileId: number): Promise<any> {
+  async getMetadataProfile(regionId: number, realmId: number, profileId: number): Promise<unknown> {
     return this.fetchJSON(`/sc2/metadata/profile/${regionId}/${realmId}/${profileId}?locale=en_US`);
   }
 
-  async getAccount(accountId: string): Promise<any> {
+  async getAccount(accountId: string): Promise<unknown> {
     return this.fetchJSON(`/sc2/player/${accountId}?locale=en_US`);
   }
 }

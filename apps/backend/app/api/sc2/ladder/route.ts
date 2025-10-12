@@ -70,13 +70,13 @@ export async function GET() {
           // Find the current player's team in the detailed ladder data
           const playerTeam = ladderDetail.ladderTeams.find(team =>
             team.teamMembers.some(member =>
-              member.id === `${latestProfile.profileId}`
+              member.character.id === `${latestProfile.profileId}`
             )
           );
 
           // Use detailed data if available, otherwise fallback to summary
           const detailedMember = playerTeam?.teamMembers.find(member =>
-            member.id === `${latestProfile.profileId}`
+            member.character.id === `${latestProfile.profileId}`
           );
 
           // Convert team structure to expected format
@@ -102,7 +102,7 @@ export async function GET() {
             mmr,
             wins,
             losses,
-            rank: playerTeam?.previousRank || entry.rank,
+            rank: playerTeam?.rank || entry.rank,
             winRate: (wins + losses) > 0
               ? Math.round((wins / (wins + losses)) * 100)
               : 0,
@@ -111,10 +111,8 @@ export async function GET() {
             leagueName: entry.leagueName,
             localizedDivisionName: entry.localizedDivisionName,
             // Add additional detailed information from team
-            points: playerTeam?.points,
-            previousRank: playerTeam?.previousRank,
+            previousRank: detailedMember?.previousRank,
             highestRank: detailedMember?.highestRank,
-            joinTimestamp: playerTeam?.joinTimestamp,
           };
         } catch (error) {
           console.error(`Failed to get detailed ladder info for ${entry.ladderId}:`, error);

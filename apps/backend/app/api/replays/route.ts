@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { replaysTable } from '@/lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('session');

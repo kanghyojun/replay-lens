@@ -45,7 +45,12 @@ export async function GET() {
     }
 
     // Get current season data
-    const seasonData = await blizzardAPI.getSeasonData(latestProfile.regionId);
+    const seasonData = await blizzardAPI.getSeasonData(latestProfile.regionId) as {
+      seasonId: number;
+      number: number;
+      year: number;
+      startDate: string;
+    };
     const currentSeasonStart = parseInt(seasonData.startDate);
 
     // Then get the matches using those IDs

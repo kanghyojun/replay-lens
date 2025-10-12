@@ -37,11 +37,12 @@ export async function GET() {
     }
 
     const profile = await blizzardAPI.getPlayerProfile(accountId);
+    const latestProfile = profile.at(-1);
 
     return NextResponse.json({
       success: true,
       profile,
-      regionName: blizzardAPI.getRegionName(profile.regionId),
+      regionName: latestProfile ? blizzardAPI.getRegionName(latestProfile.regionId) : 'Unknown',
     });
 
   } catch (error) {
