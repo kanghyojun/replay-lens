@@ -54,17 +54,31 @@ export async function GET(request: NextRequest) {
       return null;
     };
 
-    // Fetch total count
+    // Fetch total count (only count, no data)
     const totalReplays = await db
-      .select()
+      .select({ id: replaysTable.id })
       .from(replaysTable)
       .where(eq(replaysTable.userId, userId.toString()));
 
     const total = totalReplays.length;
 
     // Fetch replays from database with pagination
+    // Exclude large columns: replayHeader, replayDetails, players, gameEvents, trackerEvents, messageEvents, analysis
     const replays = await db
-      .select()
+      .select({
+        id: replaysTable.id,
+        userId: replaysTable.userId,
+        filename: replaysTable.filename,
+        uploadedAt: replaysTable.uploadedAt,
+        matchDate: replaysTable.matchDate,
+        mapName: replaysTable.mapName,
+        gameType: replaysTable.gameType,
+        winner: replaysTable.winner,
+        duration: replaysTable.duration,
+        gameLength: replaysTable.gameLength,
+        filePath: replaysTable.filePath,
+        fileSize: replaysTable.fileSize,
+      })
       .from(replaysTable)
       .where(eq(replaysTable.userId, userId.toString()))
       .orderBy(desc(replaysTable.uploadedAt))
