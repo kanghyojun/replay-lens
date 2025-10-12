@@ -77,6 +77,54 @@ function shouldTrackUnitForBattle(unitName: string): boolean {
     return false;
   }
 
+  // Exclude free units (units that don't cost resources)
+  const freeUnits = [
+    // Zerg free units
+    'Larva',
+    'Egg',
+    'Cocoon',
+    'BroodlingEscort',
+    'Broodling',
+    'InfestedTerran',
+    'InfestedTerranEgg',
+    'Changeling',
+    'ChangelingZealot',
+    'ChangelingMarineShield',
+    'ChangelingMarine',
+    'ChangelingZergling',
+    'ChangelingZerglingWings',
+    'Locust',
+    'LocustMP',
+    'LocustMPFlying',
+
+    // Protoss free units
+    'OracleStasisTrap',
+    'Interceptor',
+    'Hallucination',
+    'HallucinatedArchon',
+    'HallucinatedColossus',
+    'HallucinatedHighTemplar',
+    'HallucinatedImmortal',
+    'HallucinatedPhoenix',
+    'HallucinatedProbe',
+    'HallucinatedStalker',
+    'HallucinatedVoidRay',
+    'HallucinatedWarpPrism',
+    'HallucinatedZealot',
+    'HallucinatedOracle',
+
+    // Terran free units
+    'AutoTurret',
+    'PointDefenseDrone',
+    'Reactor',
+    'TechLab',
+    'MULE',
+  ];
+
+  if (freeUnits.includes(unitName)) {
+    return false;
+  }
+
   return true;
 }
 
