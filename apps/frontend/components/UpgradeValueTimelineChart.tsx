@@ -48,32 +48,29 @@ export function UpgradeValueTimelineChart({
     // Filter player stats events using type guard
     const playerStatsEvents = trackerEvents.filter(isPlayerStatsEvent);
 
-    // Transform data for recharts
-    type ChartDataPoint = { time: number; [key: string]: number };
-    const data = playerStatsEvents.reduce<ChartDataPoint[]>((acc, event) => {
+    // Group by player and time, keeping only the last value for each time point
+    const playerData: Record<string, Map<number, number>> = {};
+
+    for (const event of playerStatsEvents) {
       const timeInSeconds = Math.floor(event._gameloop / 22.4);
       const playerIndex = event.m_playerId - 1;
       const playerName = players[playerIndex]?.name || `Player ${event.m_playerId}`;
 
-      // Find or create time entry
-      let timeEntry = acc.find(entry => entry.time === timeInSeconds);
-      if (!timeEntry) {
-        timeEntry = { time: timeInSeconds };
-        acc.push(timeEntry);
+      if (!playerData[playerName]) {
+        playerData[playerName] = new Map();
       }
 
       // Calculate upgrade value based on filter
-      let upgradeValue = 0;
       const techValue = event.m_stats.m_scoreValueMineralsUsedCurrentTechnology +
                        event.m_stats.m_scoreValueVespeneUsedCurrentTechnology;
 
+      let upgradeValue = 0;
       switch (filter) {
         case 'all':
           upgradeValue = techValue;
           break;
         case 'combat':
           // Combat upgrades (weapon/armor) typically represent a portion of total tech
-          // This is an approximation - actual values would need upgrade tracking
           upgradeValue = Math.floor(techValue * 0.6); // Rough estimate
           break;
         case 'economy':
@@ -82,17 +79,39 @@ export function UpgradeValueTimelineChart({
           break;
       }
 
-      // Add player data
-      timeEntry[`${playerName}_upgrade`] = upgradeValue;
+      // Keep the maximum value for this time point (should be monotonically increasing)
+      const currentValue = playerData[playerName].get(timeInSeconds) || 0;
+      playerData[playerName].set(timeInSeconds, Math.max(currentValue, upgradeValue));
+    }
 
-      return acc;
-    }, []);
+    // Find max time across all players
+    let max = 0;
+    for (const timeMap of Object.values(playerData)) {
+      const playerMax = Math.max(...Array.from(timeMap.keys()));
+      max = Math.max(max, playerMax);
+    }
 
-    // Sort by time
-    data.sort((a, b) => a.time - b.time);
+    // Create continuous data points
+    type ChartDataPoint = { time: number; [key: string]: number };
+    const data: ChartDataPoint[] = [];
+
+    const lastKnownValues: Record<string, number> = {};
+
+    for (let time = 0; time <= max; time++) {
+      const dataPoint: ChartDataPoint = { time };
+
+      for (const [playerName, timeMap] of Object.entries(playerData)) {
+        const value = timeMap.get(time);
+        if (value !== undefined) {
+          lastKnownValues[playerName] = value;
+        }
+        dataPoint[`${playerName}_upgrade`] = lastKnownValues[playerName] || 0;
+      }
+
+      data.push(dataPoint);
+    }
 
     // Generate ticks every 60 seconds
-    const max = data.length > 0 ? Math.max(...data.map(d => d.time)) : 0;
     const ticks = [];
     for (let i = 0; i <= max; i += 60) {
       ticks.push(i);
