@@ -21,8 +21,9 @@ export default function ReplaysPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [isDragging, setIsDragging] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [error, setError] = useState<string | null>(null);
   const [replays, setReplays] = useState<Replay[]>([]);
   const [loadingReplays, setLoadingReplays] = useState(false);
@@ -41,59 +42,84 @@ export default function ReplaysPage() {
     e.preventDefault();
     setIsDragging(false);
 
-    const file = e.dataTransfer.files[0];
-    if (file && file.name.endsWith('.SC2Replay')) {
-      setSelectedFile(file);
+    const files = Array.from(e.dataTransfer.files);
+    const replayFiles = files.filter(file => file.name.endsWith('.SC2Replay'));
+
+    if (replayFiles.length > 0) {
+      setSelectedFiles(prev => [...prev, ...replayFiles]);
       setError(null);
     } else {
-      setError('Please upload a valid .SC2Replay file');
+      setError('Please upload valid .SC2Replay files');
     }
   }, []);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.name.endsWith('.SC2Replay')) {
-      setSelectedFile(file);
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    const replayFiles = files.filter(file => file.name.endsWith('.SC2Replay'));
+
+    if (replayFiles.length > 0) {
+      setSelectedFiles(prev => [...prev, ...replayFiles]);
       setError(null);
     } else {
-      setError('Please upload a valid .SC2Replay file');
+      setError('Please upload valid .SC2Replay files');
     }
   }, []);
 
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (selectedFiles.length === 0) return;
 
     setUploading(true);
     setError(null);
+    setUploadProgress({ current: 0, total: selectedFiles.length });
+
+    const uploadedIds: number[] = [];
 
     try {
-      const formData = new FormData();
-      formData.append('replay', selectedFile);
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        setUploadProgress({ current: i + 1, total: selectedFiles.length });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/replays/upload`, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
-      });
+        const formData = new FormData();
+        formData.append('replay', file);
 
-      if (!response.ok) {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/replays/upload`, {
+          method: 'POST',
+          credentials: 'include',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(`Failed to upload ${file.name}: ${data.error || 'Unknown error'}`);
+        }
+
         const data = await response.json();
-        throw new Error(data.error || 'Failed to upload replay');
+        uploadedIds.push(data.replayId);
       }
 
-      const data = await response.json();
+      // Clear selected files and refresh replay list
+      setSelectedFiles([]);
+      await fetchReplays();
 
-      // Redirect to replay detail page
-      router.push(`/replays/${data.replayId}`);
+      // Redirect to the first uploaded replay
+      if (uploadedIds.length > 0) {
+        router.push(`/replays/${uploadedIds[0]}`);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload replay');
+      setError(err instanceof Error ? err.message : 'Failed to upload replays');
     } finally {
       setUploading(false);
+      setUploadProgress({ current: 0, total: 0 });
     }
   };
 
-  const handleRemoveFile = () => {
-    setSelectedFile(null);
+  const handleRemoveFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setError(null);
+  };
+
+  const handleRemoveAllFiles = () => {
+    setSelectedFiles([]);
     setError(null);
   };
 
@@ -168,7 +194,7 @@ export default function ReplaysPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {!selectedFile ? (
+            {selectedFiles.length === 0 ? (
               <div
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -182,47 +208,72 @@ export default function ReplaysPage() {
               >
                 <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <p className="text-lg font-medium mb-2">
-                  Drop your replay file here
+                  Drop your replay files here
                 </p>
                 <p className="text-sm text-muted-foreground mb-4">
                   or click to browse files
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Supported format: .SC2Replay
+                  Supported format: .SC2Replay (multiple files supported)
                 </p>
                 <input
                   id="fileInput"
                   type="file"
                   accept=".SC2Replay"
+                  multiple
                   onChange={handleFileSelect}
                   className="hidden"
                 />
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <FileVideo className="h-8 w-8 text-primary" />
-                    <div>
-                      <p className="font-medium">{selectedFile.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {(selectedFile.size / 1024).toFixed(2)} KB
-                      </p>
-                    </div>
-                  </div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium">
+                    {selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''} selected
+                  </p>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={handleRemoveFile}
+                    onClick={handleRemoveAllFiles}
                     disabled={uploading}
                   >
-                    <X className="h-4 w-4" />
+                    Clear All
                   </Button>
+                </div>
+
+                <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                  {selectedFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <FileVideo className="h-6 w-6 text-primary" />
+                        <div>
+                          <p className="font-medium text-sm">{file.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {(file.size / 1024).toFixed(2)} KB
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveFile(index)}
+                        disabled={uploading}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
 
                 {error && (
                   <div className="text-destructive text-sm">
                     {error}
+                  </div>
+                )}
+
+                {uploading && uploadProgress.total > 0 && (
+                  <div className="text-sm text-muted-foreground">
+                    Uploading {uploadProgress.current} of {uploadProgress.total}...
                   </div>
                 )}
 
@@ -232,11 +283,14 @@ export default function ReplaysPage() {
                     disabled={uploading}
                     className="flex-1"
                   >
-                    {uploading ? 'Uploading...' : 'Upload and Analyze'}
+                    {uploading
+                      ? `Uploading ${uploadProgress.current}/${uploadProgress.total}...`
+                      : `Upload and Analyze ${selectedFiles.length} File${selectedFiles.length > 1 ? 's' : ''}`
+                    }
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={handleRemoveFile}
+                    onClick={handleRemoveAllFiles}
                     disabled={uploading}
                   >
                     Cancel
