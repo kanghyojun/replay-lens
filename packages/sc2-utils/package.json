@@ -1,0 +1,22 @@
+{
+  "name": "@repo/sc2-utils",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./player-colors": "./src/player-colors.ts",
+    "./spell-utils": "./src/spell-utils.ts",
+    "./unit-utils": "./src/unit-utils.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "^5"
+  }
+}
