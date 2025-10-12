@@ -319,29 +319,41 @@ export default function ReplaysPage() {
                 No replays uploaded yet. Upload your first replay to get started!
               </div>
             ) : (
-              <div className="space-y-3">
-                {replays.map((replay) => (
-                  <div
-                    key={replay.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors"
-                    onClick={() => router.push(`/replays/${replay.id}`)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileVideo className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">{replay.filename}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {replay.mapName || 'Unknown Map'} • {replay.gameType || 'Unknown'}
-                          {replay.winner && ` • Winner: ${replay.winner}`}
-                        </p>
+              <>
+                <div className="space-y-3">
+                  {replays.slice(0, 8).map((replay) => (
+                    <div
+                      key={replay.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors"
+                      onClick={() => router.push(`/replays/${replay.id}`)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileVideo className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">{replay.filename}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {replay.mapName || 'Unknown Map'} • {replay.gameType || 'Unknown'}
+                            {replay.winner && ` • Winner: ${replay.winner}`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {new Date(replay.uploadedAt).toLocaleDateString()}
                       </div>
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {new Date(replay.uploadedAt).toLocaleDateString()}
-                    </div>
+                  ))}
+                </div>
+                {replays.length > 8 && (
+                  <div className="mt-4 text-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => router.push('/replays/all')}
+                    >
+                      View All Replays ({replays.length})
+                    </Button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>

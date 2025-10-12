@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { replaysTable } from '@/lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('session');
@@ -28,6 +28,12 @@ export async function GET(_request: NextRequest) {
 
     const userId = sessionData.user.id;
 
+    // Get pagination parameters from query
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '50', 10);
+    const offset = (page - 1) * limit;
+
     // Helper function to convert BigInt and Date to string recursively
     type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
     const serializeBigInt = (obj: unknown): JsonValue => {
@@ -48,16 +54,32 @@ export async function GET(_request: NextRequest) {
       return null;
     };
 
-    // Fetch replays from database
+    // Fetch total count
+    const totalReplays = await db
+      .select()
+      .from(replaysTable)
+      .where(eq(replaysTable.userId, userId.toString()));
+
+    const total = totalReplays.length;
+
+    // Fetch replays from database with pagination
     const replays = await db
       .select()
       .from(replaysTable)
       .where(eq(replaysTable.userId, userId.toString()))
-      .orderBy(desc(replaysTable.uploadedAt));
+      .orderBy(desc(replaysTable.uploadedAt))
+      .limit(limit)
+      .offset(offset);
 
     return NextResponse.json({
       success: true,
       replays: serializeBigInt(replays),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
     });
 
   } catch (error) {
