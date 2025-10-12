@@ -10,6 +10,7 @@ import { ChevronLeft, Users, Trophy, Clock, Map } from 'lucide-react';
 import { WorkerTimelineChart } from '@/components/WorkerTimelineChart';
 import { ArmyValueTimelineChart } from '@/components/ArmyValueTimelineChart';
 import { MineralCollectionRateChart } from '@/components/MineralCollectionRateChart';
+import { UpgradeValueTimelineChart } from '@/components/UpgradeValueTimelineChart';
 import { BuildOrderCard } from '@/components/BuildOrderCard';
 import { ArmyCompositionCard } from '@/components/ArmyCompositionCard';
 import { SupplyBlockCard } from '@/components/SupplyBlockCard';
@@ -305,6 +306,12 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
                 onTimeChange={setSyncedTime}
               />
               <MineralCollectionRateChart
+                trackerEvents={replayData.trackerEvents}
+                players={replayData.players}
+                syncedTime={syncedTime}
+                onTimeChange={setSyncedTime}
+              />
+              <UpgradeValueTimelineChart
                 trackerEvents={replayData.trackerEvents}
                 players={replayData.players}
                 syncedTime={syncedTime}
