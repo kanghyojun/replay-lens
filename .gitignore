@@ -50,3 +50,4 @@ api-test-results/
 playwright-report/
 **/playwright/.auth/
 test-results/
+todo.md
