@@ -16,6 +16,7 @@ import { SupplyBlockCard } from '@/components/SupplyBlockCard';
 import { EconomyAnalysisCard } from '@/components/EconomyAnalysisCard';
 import { BattleCard } from '@/components/BattleCard';
 import { getPlayerColor } from '@repo/sc2-utils/player-colors';
+import { decodeSC2Name } from '@/lib/utils';
 import type { TrackerEvent, GameEvent, MessageEvent, Player, ReplayHeader, ReplayDetails } from 'sc2ts';
 import type { ReplayAnalysis } from '@/lib/replay-analysis-types';
 
@@ -151,7 +152,7 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">{replayData?.filename || 'Replay Analysis'}</h1>
+            <h1 className="text-3xl font-bold">{decodeSC2Name(replayData?.filename) || 'Replay Analysis'}</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Uploaded: {replayData ? new Date(replayData.uploadedAt).toLocaleString() : 'Unknown'}
             </p>
@@ -174,7 +175,7 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
                 <Map className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Map</p>
-                  <p className="font-medium">{replayData?.mapName || 'Unknown'}</p>
+                  <p className="font-medium">{decodeSC2Name(replayData?.mapName) || 'Unknown'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -195,7 +196,7 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
                 <Trophy className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm text-muted-foreground">Winner</p>
-                  <p className="font-medium">{replayData?.winner || 'Unknown'}</p>
+                  <p className="font-medium">{decodeSC2Name(replayData?.winner) || 'Unknown'}</p>
                 </div>
               </div>
             </div>
@@ -219,7 +220,7 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
                         style={{ backgroundColor: getPlayerColor(index) }}
                       />
                       <div>
-                        <p className="font-medium">{player.name}</p>
+                        <p className="font-medium">{decodeSC2Name(player.name)}</p>
                         <p className="text-sm text-muted-foreground">
                           {player.race} • Team {player.teamId}
                         </p>

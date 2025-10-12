@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 import { FileVideo, ChevronLeft, ChevronRight } from 'lucide-react';
+import { decodeSC2Name } from '@/lib/utils';
 
 interface Replay {
   id: number;
@@ -145,10 +146,10 @@ export default function AllReplaysPage() {
                       <div className="flex items-center gap-3">
                         <FileVideo className="h-5 w-5 text-muted-foreground" />
                         <div>
-                          <p className="font-medium">{replay.filename}</p>
+                          <p className="font-medium">{decodeSC2Name(replay.filename)}</p>
                           <p className="text-sm text-muted-foreground">
-                            {replay.mapName || 'Unknown Map'} • {replay.gameType || 'Unknown'}
-                            {replay.winner && ` • Winner: ${replay.winner}`}
+                            {decodeSC2Name(replay.mapName) || 'Unknown Map'} • {replay.gameType || 'Unknown'}
+                            {replay.winner && ` • Winner: ${decodeSC2Name(replay.winner)}`}
                           </p>
                         </div>
                       </div>
