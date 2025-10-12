@@ -5,19 +5,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ViewAllButton } from '@/components/ViewAllButton';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { UnitIcon } from '@/components/UnitIcon';
-import { extractBattles } from '@/lib/battle';
-import { getPlayerColor } from '@/lib/player-colors';
-import type { TrackerEvent, Player } from 'sc2ts';
+import { getPlayerColor } from '@repo/sc2-utils/player-colors';
+import type { Player } from 'sc2ts';
+import type { Battle } from '@/lib/replay-analysis-types';
 import { Swords } from 'lucide-react';
 import { useState } from 'react';
 
 interface BattleCardProps {
-  trackerEvents: TrackerEvent[];
+  battles: Battle[];
   players: Player[];
 }
 
-export function BattleCard({ trackerEvents, players }: BattleCardProps) {
-  const battles = extractBattles(trackerEvents, players);
+export function BattleCard({ battles, players }: BattleCardProps) {
   const [showAll, setShowAll] = useState(false);
 
   const formatNumber = (num: number) => num.toLocaleString();
@@ -89,7 +88,7 @@ export function BattleCard({ trackerEvents, players }: BattleCardProps) {
                       const unitsLostByPlayer = battle.unitsLost.filter(
                         unit => unit.playerId === playerId
                       );
-                      const resourcesLost = battle.resourcesLostByPlayer.get(playerId) || 0;
+                      const resourcesLost = battle.resourcesLostByPlayer[playerId] || 0;
 
                       if (unitsLostByPlayer.length === 0) {
                         return (
@@ -185,7 +184,7 @@ export function BattleCard({ trackerEvents, players }: BattleCardProps) {
               battles.forEach(battle => {
                 const unitsInBattle = battle.unitsLost.filter(u => u.playerId === playerId);
                 totalUnitsLost += unitsInBattle.length;
-                totalResourcesLost += battle.resourcesLostByPlayer.get(playerId) || 0;
+                totalResourcesLost += battle.resourcesLostByPlayer[playerId] || 0;
               });
 
               return (

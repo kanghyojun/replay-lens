@@ -9,7 +9,7 @@ import { cookies } from 'next/headers';
  * 2. http://localhost:2000/api/dev/export-session 방문
  * 3. 표시된 JSON을 복사하여 apps/frontend/playwright/.auth/user.json 파일에 저장
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   // 프로덕션 환경에서는 접근 불가
   if (process.env.NODE_ENV === 'production') {
     return NextResponse.json(

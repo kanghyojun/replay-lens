@@ -15,8 +15,9 @@ import { ArmyCompositionCard } from '@/components/ArmyCompositionCard';
 import { SupplyBlockCard } from '@/components/SupplyBlockCard';
 import { EconomyAnalysisCard } from '@/components/EconomyAnalysisCard';
 import { BattleCard } from '@/components/BattleCard';
-import { getPlayerColor } from '@/lib/player-colors';
+import { getPlayerColor } from '@repo/sc2-utils/player-colors';
 import type { TrackerEvent, GameEvent, MessageEvent, Player, ReplayHeader, ReplayDetails } from 'sc2ts';
+import type { ReplayAnalysis } from '@/lib/replay-analysis-types';
 
 interface ReplayData {
   id: number;
@@ -34,6 +35,7 @@ interface ReplayData {
   trackerEvents: TrackerEvent[];
   gameEvents: GameEvent[];
   messageEvents: MessageEvent[];
+  analysis: ReplayAnalysis | null;
 }
 
 export default function ReplayDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -125,23 +127,6 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  // Format date
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Unknown';
-    const date = new Date(parseInt(dateString) * 1000);
-    return date.toLocaleString();
-  };
-
-  // Get race color
-  const getRaceColor = (race: string) => {
-    switch (race?.toLowerCase()) {
-      case 'terr': return 'bg-blue-500';
-      case 'prot': return 'bg-yellow-500';
-      case 'zerg': return 'bg-purple-500';
-      default: return 'bg-gray-500';
-    }
   };
 
   // Get result text from result code
@@ -258,42 +243,42 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
         </Card>
 
         {/* Build Order */}
-        {replayData?.trackerEvents && replayData?.gameEvents && replayData?.players && (
+        {replayData?.analysis && replayData?.players && (
           <BuildOrderCard
-            trackerEvents={replayData.trackerEvents}
-            gameEvents={replayData.gameEvents}
+            buildOrder={replayData.analysis.buildOrder}
+            spellCasting={replayData.analysis.spellCasting}
             players={replayData.players}
           />
         )}
 
         {/* Army Composition */}
-        {replayData?.trackerEvents && replayData?.players && (
+        {replayData?.analysis && replayData?.players && (
           <ArmyCompositionCard
-            trackerEvents={replayData.trackerEvents}
+            armyComposition={replayData.analysis.armyComposition}
             players={replayData.players}
           />
         )}
 
         {/* Supply Blocks */}
-        {replayData?.trackerEvents && replayData?.players && (
+        {replayData?.analysis && replayData?.players && (
           <SupplyBlockCard
-            trackerEvents={replayData.trackerEvents}
+            supplyBlocks={replayData.analysis.supplyBlocks}
             players={replayData.players}
           />
         )}
 
         {/* Economy Analysis */}
-        {replayData?.trackerEvents && replayData?.players && (
+        {replayData?.analysis && replayData?.players && (
           <EconomyAnalysisCard
-            trackerEvents={replayData.trackerEvents}
+            economy={replayData.analysis.economy}
             players={replayData.players}
           />
         )}
 
         {/* Battles */}
-        {replayData?.trackerEvents && replayData?.players && (
+        {replayData?.analysis && replayData?.players && (
           <BattleCard
-            trackerEvents={replayData.trackerEvents}
+            battles={replayData.analysis.battles}
             players={replayData.players}
           />
         )}

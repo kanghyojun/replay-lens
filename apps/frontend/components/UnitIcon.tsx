@@ -1,5 +1,5 @@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { abbreviateUnitName, abbreviateUpgradeName } from '@/lib/build-order';
+import { abbreviateUnitName, abbreviateUpgradeName } from '@repo/sc2-utils/unit-utils';
 
 interface UnitIconProps {
   name: string;

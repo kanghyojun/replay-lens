@@ -13,7 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Trophy, Target, Clock } from 'lucide-react';
 
 interface SC2Match {
   map: string;

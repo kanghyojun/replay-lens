@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { getPlayerColor, formatGameTime } from '@/lib/player-colors';
+import { getPlayerColor, formatGameTime } from '@repo/sc2-utils/player-colors';
 import type { TrackerEvent, Player } from 'sc2ts';
 
 // PlayerStats structure from SC2 replay tracker events

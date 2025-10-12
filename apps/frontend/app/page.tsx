@@ -4,14 +4,13 @@ import { useAuth } from '@/components/auth-provider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trophy, History, FileVideo } from 'lucide-react';
-import { useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function Home() {
+function HomeContent() {
   const { user, loading, refreshUser } = useAuth();
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   useEffect(() => {
     // Check if we just returned from OAuth
@@ -169,5 +168,19 @@ export default function Home() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
+        </div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

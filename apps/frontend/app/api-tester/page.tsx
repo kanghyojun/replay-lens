@@ -5,51 +5,15 @@ import { Button } from '@/components/ui/button';
 
 interface ApiTestResult {
   success: boolean;
-  data?: any;
+  data?: unknown;
   savedTo?: string;
   metadata?: {
     endpoint: string;
     timestamp: string;
-    parameters: any;
+    parameters: Record<string, unknown>;
   };
   error?: string;
   details?: string;
-}
-
-interface OAuthTokenResult {
-  success: boolean;
-  token?: string;
-  tokenType?: string;
-  expiresIn?: number;
-  message?: string;
-  error?: string;
-  user?: {
-    id: string;
-    battletag: string;
-  };
-}
-
-interface SC2ProfileResult {
-  user: {
-    id: string;
-    battletag: string;
-  };
-  sc2Accounts: Array<{
-    regionId: number;
-    realmId: number;
-    profileId: number;
-    name: string;
-    profileUrl: string;
-    avatarUrl: string;
-  }>;
-  defaultAccount: {
-    regionId: number;
-    realmId: number;
-    profileId: number;
-    name: string;
-    profileUrl: string;
-    avatarUrl: string;
-  } | null;
 }
 
 export default function ApiTesterPage() {
@@ -123,7 +87,7 @@ export default function ApiTesterPage() {
     }
   };
 
-  const testApi = async (endpoint: string, params: any) => {
+  const testApi = async (endpoint: string, params: Record<string, string>) => {
     setIsLoading(true);
     try {
       const queryParams = new URLSearchParams({
@@ -311,7 +275,7 @@ export default function ApiTesterPage() {
         </div>
         {!token && (
           <p className="text-sm text-amber-600">
-            먼저 "로그인 상태 확인" 버튼을 클릭하여 인증을 확인해주세요. 로그인되지 않았다면 메인 페이지에서 Battle.net 로그인 후 시도해주세요.
+            먼저 &ldquo;로그인 상태 확인&rdquo; 버튼을 클릭하여 인증을 확인해주세요. 로그인되지 않았다면 메인 페이지에서 Battle.net 로그인 후 시도해주세요.
           </p>
         )}
       </div>
@@ -544,7 +508,7 @@ export default function ApiTesterPage() {
                   </p>
                 )}
 
-                {result.data && (
+                {result.data !== undefined && (
                   <details className="mt-2">
                     <summary className="cursor-pointer text-sm font-medium">
                       데이터 미리보기 (클릭하여 펼치기)

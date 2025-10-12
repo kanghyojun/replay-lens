@@ -3,24 +3,23 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ViewAllButton } from '@/components/ViewAllButton';
-import { extractEconomy } from '@/lib/economy';
-import { getPlayerColor } from '@/lib/player-colors';
-import type { TrackerEvent, Player } from 'sc2ts';
+import { getPlayerColor } from '@repo/sc2-utils/player-colors';
+import type { Player } from 'sc2ts';
+import type { EconomyTimeline } from '@/lib/replay-analysis-types';
 import { useState } from 'react';
 
 interface EconomyAnalysisCardProps {
-  trackerEvents: TrackerEvent[];
+  economy: EconomyTimeline[];
   players: Player[];
 }
 
-export function EconomyAnalysisCard({ trackerEvents, players }: EconomyAnalysisCardProps) {
-  const timelines = extractEconomy(trackerEvents, players);
+export function EconomyAnalysisCard({ economy, players }: EconomyAnalysisCardProps) {
   const [showAll, setShowAll] = useState(false);
 
   const formatNumber = (num: number) => num.toLocaleString();
 
   // Find the maximum number of snapshots across all players
-  const maxSnapshots = Math.max(...timelines.map(t => t.snapshots.length));
+  const maxSnapshots = Math.max(...economy.map(t => t.snapshots.length));
 
   if (maxSnapshots === 0) {
     return (
@@ -78,7 +77,7 @@ export function EconomyAnalysisCard({ trackerEvents, players }: EconomyAnalysisC
                     <TableCell className="font-mono font-bold align-top">
                       {timeLabel}
                     </TableCell>
-                    {timelines.map((timeline) => {
+                    {economy.map((timeline) => {
                       const snapshotData = timeline.snapshots[idx];
                       if (!snapshotData) {
                         return (
@@ -151,7 +150,7 @@ export function EconomyAnalysisCard({ trackerEvents, players }: EconomyAnalysisC
         <div className="mt-6 pt-4 border-t">
           <h4 className="text-sm font-semibold mb-3">Final Statistics</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {timelines.map((timeline, idx) => {
+            {economy.map((timeline, idx) => {
               const player = players[idx];
               const lastSnapshot = timeline.snapshots[timeline.snapshots.length - 1];
 

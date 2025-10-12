@@ -34,10 +34,26 @@ interface LadderEntry {
   joinTimestamp?: number;
 }
 
+interface PlacementMatch {
+  localizedGameMode: string;
+  members: Array<{
+    name: string;
+    playerId: string;
+    region: number;
+  }>;
+  gamesRemaining: number;
+}
+
+interface LadderMembership {
+  ladderId: string;
+  localizedGameMode: string;
+  rank: number;
+}
+
 interface LadderData {
   ladders: LadderEntry[];
-  placementMatches: any[];
-  allMemberships: any[];
+  placementMatches: PlacementMatch[];
+  allMemberships: LadderMembership[];
   profile: {
     name: string;
     regionName: string;

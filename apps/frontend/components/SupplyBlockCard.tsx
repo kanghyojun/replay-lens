@@ -3,25 +3,24 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ViewAllButton } from '@/components/ViewAllButton';
-import { extractSupplyBlocks } from '@/lib/supply-block';
-import { getPlayerColor } from '@/lib/player-colors';
-import type { TrackerEvent, Player } from 'sc2ts';
+import { getPlayerColor } from '@repo/sc2-utils/player-colors';
+import type { Player } from 'sc2ts';
+import type { SupplyBlockTimeline } from '@/lib/replay-analysis-types';
 import { useState } from 'react';
 
 interface SupplyBlockCardProps {
-  trackerEvents: TrackerEvent[];
+  supplyBlocks: SupplyBlockTimeline[];
   players: Player[];
 }
 
-export function SupplyBlockCard({ trackerEvents, players }: SupplyBlockCardProps) {
-  const timelines = extractSupplyBlocks(trackerEvents, players);
+export function SupplyBlockCard({ supplyBlocks, players }: SupplyBlockCardProps) {
   const [showAll, setShowAll] = useState(false);
 
   // Player IDs in tracker events are 1-based indices
   const playerIds = players.map((_, idx) => idx + 1);
 
   // Combine all blocks from all players and sort by start time
-  const allBlocks = timelines.flatMap(timeline =>
+  const allBlocks = supplyBlocks.flatMap(timeline =>
     timeline.blocks.map(block => ({
       ...block,
       playerId: timeline.playerId,
@@ -119,7 +118,7 @@ export function SupplyBlockCard({ trackerEvents, players }: SupplyBlockCardProps
         <div className="mt-6 pt-4 border-t">
           <h4 className="text-sm font-semibold mb-3">Summary</h4>
           <div className="grid grid-cols-2 gap-4">
-            {timelines.map((timeline, idx) => {
+            {supplyBlocks.map((timeline, idx) => {
               const player = players[idx];
               return (
                 <div key={timeline.playerId} className="flex items-center justify-between p-3 bg-muted/50 rounded">

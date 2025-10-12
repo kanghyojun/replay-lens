@@ -6,27 +6,26 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ViewAllButton } from '@/components/ViewAllButton';
 import { UnitIcon } from '@/components/UnitIcon';
-import { extractArmyComposition } from '@/lib/army-composition';
-import { getPlayerColor } from '@/lib/player-colors';
-import type { TrackerEvent, Player } from 'sc2ts';
+import { getPlayerColor } from '@repo/sc2-utils/player-colors';
+import type { Player } from 'sc2ts';
+import type { ArmyCompositionSnapshot } from '@/lib/replay-analysis-types';
 
 interface ArmyCompositionCardProps {
-  trackerEvents: TrackerEvent[];
+  armyComposition: ArmyCompositionSnapshot[];
   players: Player[];
 }
 
-export function ArmyCompositionCard({ trackerEvents, players }: ArmyCompositionCardProps) {
-  const snapshots = extractArmyComposition(trackerEvents, players);
+export function ArmyCompositionCard({ armyComposition, players }: ArmyCompositionCardProps) {
   const [showAll, setShowAll] = useState(false);
 
   // Player IDs in tracker events are 1-based indices
   const playerIds = players.map((_, idx) => idx + 1);
 
   const INITIAL_ROWS = 8;
-  const displayedSnapshots = showAll ? snapshots : snapshots.slice(0, INITIAL_ROWS);
-  const hasMore = snapshots.length > INITIAL_ROWS;
+  const displayedSnapshots = showAll ? armyComposition : armyComposition.slice(0, INITIAL_ROWS);
+  const hasMore = armyComposition.length > INITIAL_ROWS;
 
-  if (snapshots.length === 0) {
+  if (armyComposition.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -75,9 +74,9 @@ export function ArmyCompositionCard({ trackerEvents, players }: ArmyCompositionC
                       {snapshot.timeLabel}
                     </TableCell>
                     {playerIds.map((playerId) => {
-                      const units = snapshot.players.get(playerId);
+                      const units = snapshot.players[playerId];
 
-                      if (!units || units.size === 0) {
+                      if (!units || Object.keys(units).length === 0) {
                         return (
                           <TableCell key={playerId} className="align-top">
                             <div className="text-sm text-muted-foreground py-2">No units</div>
@@ -88,7 +87,7 @@ export function ArmyCompositionCard({ trackerEvents, players }: ArmyCompositionC
                       return (
                         <TableCell key={playerId} className="align-top">
                           <div className="flex flex-wrap gap-1">
-                            {Array.from(units.entries()).map(([unitName, count]) => (
+                            {Object.entries(units).map(([unitName, count]) => (
                               <UnitIcon key={unitName} name={unitName} count={count} type="unit" />
                             ))}
                           </div>
@@ -106,7 +105,7 @@ export function ArmyCompositionCard({ trackerEvents, players }: ArmyCompositionC
           <ViewAllButton
             showAll={showAll}
             onToggle={() => setShowAll(!showAll)}
-            totalCount={snapshots.length}
+            totalCount={armyComposition.length}
           />
         )}
       </CardContent>

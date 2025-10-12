@@ -7,39 +7,33 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Switch } from '@/components/ui/switch';
 import { ViewAllButton } from '@/components/ViewAllButton';
 import { UnitIcon } from '@/components/UnitIcon';
-import { extractBuildOrder } from '@/lib/build-order';
-import { extractSpellCasting, getSpellDisplayName, getSpellAbbreviation, type SpellCast } from '@/lib/spell-casting';
-import { getPlayerColor } from '@/lib/player-colors';
-import type { TrackerEvent, GameEvent, Player } from 'sc2ts';
+import { getSpellDisplayName, getSpellAbbreviation } from '@repo/sc2-utils/spell-utils';
+import { getPlayerColor } from '@repo/sc2-utils/player-colors';
+import type { Player } from 'sc2ts';
+import type { BuildOrderTimeline, SpellCastingTimeline, SpellCast } from '@/lib/replay-analysis-types';
 
 interface BuildOrderCardProps {
-  trackerEvents: TrackerEvent[];
-  gameEvents: GameEvent[];
+  buildOrder: BuildOrderTimeline[];
+  spellCasting: SpellCastingTimeline[];
   players: Player[];
 }
 
-export function BuildOrderCard({ trackerEvents, gameEvents, players }: BuildOrderCardProps) {
-  const buildOrderTimeline = extractBuildOrder(trackerEvents, players);
+export function BuildOrderCard({ buildOrder, spellCasting, players }: BuildOrderCardProps) {
   const [showAll, setShowAll] = useState(false);
   const [showSpells, setShowSpells] = useState(true);
   const [selectedSpell, setSelectedSpell] = useState<SpellCast | null>(null);
 
-  // Extract spell casting timeline
-  const spellTimeline = useMemo(() => {
-    return extractSpellCasting(gameEvents, trackerEvents);
-  }, [gameEvents, trackerEvents]);
-
   // Merge build order timeline with spell timeline
   const timeline = useMemo(() => {
-    const merged = new Map<string, typeof buildOrderTimeline[0]>();
+    const merged = new Map<string, typeof buildOrder[0]>();
 
     // Add all build order entries
-    buildOrderTimeline.forEach(entry => {
+    buildOrder.forEach(entry => {
       merged.set(entry.timeLabel, entry);
     });
 
     // Add spell timeline entries (or merge with existing)
-    spellTimeline.forEach(spellEntry => {
+    spellCasting.forEach(spellEntry => {
       if (merged.has(spellEntry.timeLabel)) {
         // Entry already exists, we'll handle spells separately in rendering
       } else {
@@ -47,22 +41,22 @@ export function BuildOrderCard({ trackerEvents, gameEvents, players }: BuildOrde
         merged.set(spellEntry.timeLabel, {
           time: spellEntry.time,
           timeLabel: spellEntry.timeLabel,
-          players: new Map(),
+          players: {},
         });
       }
     });
 
     // Convert to sorted array
     return Array.from(merged.values()).sort((a, b) => a.time - b.time);
-  }, [buildOrderTimeline, spellTimeline]);
+  }, [buildOrder, spellCasting]);
 
   // Player IDs in tracker events are 1-based indices
   const playerIds = players.map((_, idx) => idx + 1);
 
   // Helper function to get spells for a specific time bucket and player
   const getSpellsForTimeAndPlayer = (timeLabel: string, playerId: number) => {
-    const spellBucket = spellTimeline.find(bucket => bucket.timeLabel === timeLabel);
-    const spells = spellBucket?.players.get(playerId) || [];
+    const spellBucket = spellCasting.find(bucket => bucket.timeLabel === timeLabel);
+    const spells = spellBucket?.players[playerId] || [];
 
     if (spells.length > 0) {
       console.log(`Found ${spells.length} spells at ${timeLabel} for player ${playerId}:`, spells);
@@ -76,12 +70,12 @@ export function BuildOrderCard({ trackerEvents, gameEvents, players }: BuildOrde
     return timeline.filter(timeSlot => {
       // Check if any player has content at this time
       for (const playerId of playerIds) {
-        const playerItems = timeSlot.players.get(playerId);
+        const playerItems = timeSlot.players[playerId];
         const spells = showSpells ? getSpellsForTimeAndPlayer(timeSlot.timeLabel, playerId) : [];
 
-        const hasBuildings = playerItems && playerItems.buildings.size > 0;
-        const hasUnits = playerItems && playerItems.units.size > 0;
-        const hasUpgrades = playerItems && playerItems.upgrades.size > 0;
+        const hasBuildings = playerItems && Object.keys(playerItems.buildings).length > 0;
+        const hasUnits = playerItems && Object.keys(playerItems.units).length > 0;
+        const hasUpgrades = playerItems && Object.keys(playerItems.upgrades).length > 0;
         const hasSpells = spells.length > 0;
 
         if (hasBuildings || hasUnits || hasUpgrades || hasSpells) {
@@ -90,7 +84,7 @@ export function BuildOrderCard({ trackerEvents, gameEvents, players }: BuildOrde
       }
       return false;
     });
-  }, [timeline, showSpells, playerIds, spellTimeline]);
+  }, [timeline, showSpells, playerIds, spellCasting]);
 
   const INITIAL_ROWS = 8;
   const displayedTimeline = showAll ? filteredTimeline : filteredTimeline.slice(0, INITIAL_ROWS);
@@ -99,14 +93,14 @@ export function BuildOrderCard({ trackerEvents, gameEvents, players }: BuildOrde
   console.log('Players:', players);
   console.log('Player IDs:', playerIds);
   console.log('Timeline length:', timeline.length);
-  console.log('Spell timeline length:', spellTimeline.length);
+  console.log('Spell timeline length:', spellCasting.length);
   console.log('Show spells enabled:', showSpells);
   console.log('Displayed timeline count:', displayedTimeline.length);
   console.log('Displayed timeline labels:', displayedTimeline.map(t => t.timeLabel));
-  if (spellTimeline.length > 0) {
-    console.log('First spell timeline bucket:', spellTimeline[0]);
-    console.log('Spell timeline player IDs:', Array.from(spellTimeline[0].players.keys()));
-    console.log('All spell timeline labels:', spellTimeline.map(t => t.timeLabel));
+  if (spellCasting.length > 0) {
+    console.log('First spell timeline bucket:', spellCasting[0]);
+    console.log('Spell timeline player IDs:', Object.keys(spellCasting[0].players));
+    console.log('All spell timeline labels:', spellCasting.map(t => t.timeLabel));
   }
 
   if (timeline.length === 0) {
@@ -182,12 +176,12 @@ export function BuildOrderCard({ trackerEvents, gameEvents, players }: BuildOrde
                     {timeSlot.timeLabel}
                   </TableCell>
                   {playerIds.map((playerId) => {
-                    const playerItems = timeSlot.players.get(playerId);
+                    const playerItems = timeSlot.players[playerId];
                     const spells = showSpells ? getSpellsForTimeAndPlayer(timeSlot.timeLabel, playerId) : [];
 
-                    const hasBuildings = playerItems && playerItems.buildings.size > 0;
-                    const hasUnits = playerItems && playerItems.units.size > 0;
-                    const hasUpgrades = playerItems && playerItems.upgrades.size > 0;
+                    const hasBuildings = playerItems && Object.keys(playerItems.buildings).length > 0;
+                    const hasUnits = playerItems && Object.keys(playerItems.units).length > 0;
+                    const hasUpgrades = playerItems && Object.keys(playerItems.upgrades).length > 0;
                     const hasSpells = spells.length > 0;
 
                     if (!hasBuildings && !hasUnits && !hasUpgrades && !hasSpells) {
@@ -206,7 +200,7 @@ export function BuildOrderCard({ trackerEvents, gameEvents, players }: BuildOrde
                             <div>
                               <div className="text-xs font-semibold text-muted-foreground mb-1">Buildings</div>
                               <div className="flex flex-wrap gap-1">
-                                {Array.from(playerItems!.buildings.entries()).map(([buildingName, count]) => (
+                                {Object.entries(playerItems!.buildings).map(([buildingName, count]) => (
                                   <UnitIcon key={buildingName} name={buildingName} count={count} type="building" />
                                 ))}
                               </div>
@@ -218,7 +212,7 @@ export function BuildOrderCard({ trackerEvents, gameEvents, players }: BuildOrde
                             <div>
                               <div className="text-xs font-semibold text-muted-foreground mb-1">Units</div>
                               <div className="flex flex-wrap gap-1">
-                                {Array.from(playerItems!.units.entries()).map(([unitName, count]) => (
+                                {Object.entries(playerItems!.units).map(([unitName, count]) => (
                                   <UnitIcon key={unitName} name={unitName} count={count} type="unit" />
                                 ))}
                               </div>
@@ -230,7 +224,7 @@ export function BuildOrderCard({ trackerEvents, gameEvents, players }: BuildOrde
                             <div>
                               <div className="text-xs font-semibold text-muted-foreground mb-1">Upgrades</div>
                               <div className="flex flex-wrap gap-1">
-                                {Array.from(playerItems!.upgrades.entries()).map(([upgradeName, count]) => (
+                                {Object.entries(playerItems!.upgrades).map(([upgradeName, count]) => (
                                   <UnitIcon key={upgradeName} name={upgradeName} count={count} type="upgrade" />
                                 ))}
                               </div>
