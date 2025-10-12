@@ -18,13 +18,22 @@ export const replaysTable = pgTable("replays", {
   mapName: varchar({ length: 255 }),
   gameType: varchar({ length: 50 }), // 1v1, 2v2, etc.
 
-  // Replay analysis data (stored as JSON)
+  // Replay raw data (stored as JSON)
   replayHeader: jsonb(), // Raw header data
   replayDetails: jsonb(), // Player details, game details
   players: jsonb(), // Array of players
   gameEvents: jsonb(), // Game events from replay
   trackerEvents: jsonb(), // Tracker events from replay
   messageEvents: jsonb(), // Message events from replay
+
+  // Computed analysis (stored as JSON) - calculated once on upload
+  analysis: jsonb(), // Complete replay analysis including:
+                     // - armyComposition: ArmyCompositionSnapshot[]
+                     // - supplyBlocks: SupplyBlockTimeline[]
+                     // - economy: EconomyTimeline[]
+                     // - battles: Battle[]
+                     // - spellCasting: SpellCastingTimeline[]
+                     // - buildOrder: BuildOrderTimeline[]
 
   // Game result
   winner: varchar({ length: 255 }), // Player name who won
