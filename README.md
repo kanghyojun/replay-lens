@@ -1,135 +1,105 @@
-# Turborepo starter
+# ReplayLens
 
-This Turborepo starter is maintained by the Turborepo core team.
-
-## Using this example
-
-Run the following command:
-
-```sh
-npx create-turbo@latest
-```
+A StarCraft II replay analysis and match tracking application built with modern web technologies.
 
 ## What's inside?
 
-This Turborepo includes the following packages/apps:
+This Turborepo monorepo includes the following packages/apps:
 
 ### Apps and Packages
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- `frontend`: a [Next.js](https://nextjs.org/) app for the user-facing interface (port 2000)
+- `backend`: a [Next.js](https://nextjs.org/) app providing GraphQL API and authentication (port 2001)
+- `@repo/ui`: a React component library shared across applications
+- `@repo/sc2-utils`: utilities for StarCraft II replay processing
+- `@repo/types`: shared TypeScript type definitions
+- `@repo/eslint-config`: shared ESLint configurations
+- `@repo/typescript-config`: shared TypeScript configurations
 
 Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
-### Utilities
+## Tech Stack
 
-This Turborepo has some additional tools already setup for you:
+- **Framework**: Next.js 15.5.3 with App Router and Turbopack
+- **Language**: TypeScript 5.9
+- **Styling**: Tailwind CSS v4
+- **Database**: PostgreSQL with Drizzle ORM
+- **API**: GraphQL with Pothos
+- **Authentication**: Battle.net OAuth 2.0
+- **Monorepo**: Turborepo with pnpm workspaces
+- **Replay Parsing**: sc2ts library
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+## Getting Started
+
+### Prerequisites
+
+- Node.js >= 18
+- pnpm 9.0.0 (automatically installed via packageManager field)
+
+### Installation
+
+```bash
+pnpm install
+```
+
+### Development
+
+Run all apps in development mode:
+
+```bash
+pnpm dev
+```
+
+Run specific app:
+
+```bash
+pnpm dev --filter=frontend  # Runs on port 2000
+pnpm dev --filter=backend   # Runs on port 2001
+```
 
 ### Build
 
-To build all apps and packages, run the following command:
+Build all apps and packages:
 
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+```bash
+pnpm build
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+Build specific app:
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+```bash
+pnpm build --filter=frontend
+pnpm build --filter=backend
 ```
 
-### Develop
+### Other Commands
 
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+```bash
+pnpm lint          # Lint all packages
+pnpm format        # Format code with Prettier
+pnpm check-types   # Type check all packages
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+## Project Structure
 
 ```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+.
+├── apps
+│   ├── frontend/          # Next.js frontend app
+│   └── backend/           # Next.js backend app with GraphQL API
+├── packages
+│   ├── ui/                # Shared React components
+│   ├── sc2-utils/         # StarCraft II utilities
+│   ├── types/             # Shared TypeScript types
+│   ├── eslint-config/     # Shared ESLint config
+│   └── typescript-config/ # Shared TypeScript config
+├── turbo.json             # Turborepo configuration
+└── pnpm-workspace.yaml    # pnpm workspace configuration
 ```
 
-### Remote Caching
+## Learn More
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Turborepo Documentation](https://turborepo.com/docs)
+- [Drizzle ORM](https://orm.drizzle.team/)
+- [Pothos GraphQL](https://pothos-graphql.dev/)

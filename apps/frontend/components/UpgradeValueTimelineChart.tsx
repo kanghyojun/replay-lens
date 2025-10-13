@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { getPlayerColor, formatGameTime } from '@repo/sc2-utils/player-colors';
-import { Button } from './ui/button';
 import type { TrackerEvent, Player } from 'sc2ts';
 
 // PlayerStats structure from SC2 replay tracker events
@@ -33,15 +32,12 @@ interface UpgradeValueTimelineChartProps {
   onTimeChange?: (time: number | null) => void;
 }
 
-type UpgradeFilter = 'all' | 'combat' | 'economy';
-
 export function UpgradeValueTimelineChart({
   trackerEvents,
   players,
   syncedTime,
   onTimeChange,
 }: UpgradeValueTimelineChartProps) {
-  const [filter, setFilter] = useState<UpgradeFilter>('all');
 
   // Memoize expensive data transformations
   const { chartData, timeTicks, maxTime, player1Name, player2Name } = useMemo(() => {
@@ -60,24 +56,9 @@ export function UpgradeValueTimelineChart({
         playerData[playerName] = new Map();
       }
 
-      // Calculate upgrade value based on filter
-      const techValue = event.m_stats.m_scoreValueMineralsUsedCurrentTechnology +
-                       event.m_stats.m_scoreValueVespeneUsedCurrentTechnology;
-
-      let upgradeValue = 0;
-      switch (filter) {
-        case 'all':
-          upgradeValue = techValue;
-          break;
-        case 'combat':
-          // Combat upgrades (weapon/armor) typically represent a portion of total tech
-          upgradeValue = Math.floor(techValue * 0.6); // Rough estimate
-          break;
-        case 'economy':
-          // Economy upgrades (worker speed, harvest, etc.)
-          upgradeValue = Math.floor(techValue * 0.4); // Rough estimate
-          break;
-      }
+      // Calculate total upgrade value (all upgrades)
+      const upgradeValue = event.m_stats.m_scoreValueMineralsUsedCurrentTechnology +
+                          event.m_stats.m_scoreValueVespeneUsedCurrentTechnology;
 
       // Keep the maximum value for this time point (should be monotonically increasing)
       const currentValue = playerData[playerName].get(timeInSeconds) || 0;
@@ -127,35 +108,12 @@ export function UpgradeValueTimelineChart({
       player1Name: p1Name,
       player2Name: p2Name,
     };
-  }, [trackerEvents, players, filter]);
+  }, [trackerEvents, players]);
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4">
         <h3 className="text-lg font-semibold">Upgrade Value Timeline</h3>
-        <div className="flex gap-2">
-          <Button
-            variant={filter === 'all' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilter('all')}
-          >
-            All
-          </Button>
-          <Button
-            variant={filter === 'combat' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilter('combat')}
-          >
-            Combat
-          </Button>
-          <Button
-            variant={filter === 'economy' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilter('economy')}
-          >
-            Economy
-          </Button>
-        </div>
       </div>
       <div className="h-[400px]">
         <ResponsiveContainer width="100%" height="100%">

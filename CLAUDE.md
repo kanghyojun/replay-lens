@@ -4,10 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Turborepo monorepo for a StarCraft II match tracking application that displays real-time match records. The project has the following structure:
+**ReplayLens** is a Turborepo monorepo for a StarCraft II replay analysis and match tracking application. The project analyzes StarCraft II replay files to provide insights and detailed match statistics. The project has the following structure:
 
-- **Frontend app** (`apps/frontend`): Next.js app running on default port 3000
-- **Backend app** (`apps/backend`): Next.js app configured to run on port 4000
+- **Frontend app** (`apps/frontend`): Next.js app running on port 2000
+- **Backend app** (`apps/backend`): Next.js app configured to run on port 2001
 - **UI Package** (`packages/ui`): Shared React component library
 - **Config Packages**: ESLint and TypeScript configurations shared across the monorepo
 
@@ -22,8 +22,8 @@ pnpm dev
 pnpm dev --filter=frontend
 pnpm dev --filter=backend
 
-# The backend runs on port 4000 (configured in apps/backend/package.json)
-# The frontend runs on port 3000 (default Next.js port)
+# The backend runs on port 2001 (configured in apps/backend/package.json)
+# The frontend runs on port 2000 (configured in apps/frontend/package.json)
 ```
 
 ### Building
@@ -75,8 +75,8 @@ pnpm check-types
 - `@repo/typescript-config`: Shared TypeScript configurations
 
 ### Port Configuration
-- Frontend: Port 3000 (default)
-- Backend: Port 4000 (explicitly configured in `apps/backend/package.json`)
+- Frontend: Port 2000 (explicitly configured in `apps/frontend/package.json`)
+- Backend: Port 2001 (explicitly configured in `apps/backend/package.json`)
 
 ## Development Workflow
 

@@ -1,5 +1,5 @@
 {
-  "name": "sc2match",
+  "name": "replaylens",
   "private": true,
   "scripts": {
     "build": "turbo run build",

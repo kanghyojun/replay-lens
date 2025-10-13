@@ -13,7 +13,7 @@ test.describe('인증된 사용자 테스트', () => {
     await page.goto('/');
 
     // 페이지 타이틀 확인
-    await expect(page).toHaveTitle(/SC2Match/i);
+    await expect(page).toHaveTitle(/ReplayLens/i);
   });
 
   test('로그인 상태 확인', async ({ page }) => {
