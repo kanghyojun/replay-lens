@@ -8,6 +8,9 @@ import path from 'path';
 export default defineConfig({
   testDir: './tests',
 
+  /* 전역 timeout 설정 (60초) */
+  timeout: 60000,
+
   /* 병렬 테스트 실행 */
   fullyParallel: true,
 
