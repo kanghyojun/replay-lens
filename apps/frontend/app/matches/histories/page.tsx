@@ -13,7 +13,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface SC2Match {
@@ -55,7 +55,7 @@ export default function MatchHistoriesPage() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async () => {
     if (!user) return;
 
     setLoading(true);
@@ -84,13 +84,13 @@ export default function MatchHistoriesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user) {
       fetchMatches();
     }
-  }, [user]);
+  }, [user, fetchMatches]);
 
   if (authLoading) {
     return (

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from './auth-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -49,7 +49,7 @@ export function MatchHistory() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async () => {
     if (!user) return;
 
     setLoading(true);
@@ -76,13 +76,13 @@ export function MatchHistory() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user) {
       fetchMatches();
     }
-  }, [user]);
+  }, [user, fetchMatches]);
 
   if (!user) {
     return null;

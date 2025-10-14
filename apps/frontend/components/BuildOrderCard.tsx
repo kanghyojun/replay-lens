@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -54,7 +54,7 @@ export function BuildOrderCard({ buildOrder, spellCasting, players }: BuildOrder
   const playerIds = players.map((_, idx) => idx + 1);
 
   // Helper function to get spells for a specific time bucket and player
-  const getSpellsForTimeAndPlayer = (timeLabel: string, playerId: number) => {
+  const getSpellsForTimeAndPlayer = useCallback((timeLabel: string, playerId: number) => {
     const spellBucket = spellCasting.find(bucket => bucket.timeLabel === timeLabel);
     const spells = spellBucket?.players[playerId] || [];
 
@@ -63,7 +63,7 @@ export function BuildOrderCard({ buildOrder, spellCasting, players }: BuildOrder
     }
 
     return spells;
-  };
+  }, [spellCasting]);
 
   // Filter out timeline slots that would be completely empty
   const filteredTimeline = useMemo(() => {
@@ -84,7 +84,7 @@ export function BuildOrderCard({ buildOrder, spellCasting, players }: BuildOrder
       }
       return false;
     });
-  }, [timeline, showSpells, playerIds, spellCasting]);
+  }, [timeline, showSpells, playerIds, getSpellsForTimeAndPlayer]);
 
   const INITIAL_ROWS = 8;
   const displayedTimeline = showAll ? filteredTimeline : filteredTimeline.slice(0, INITIAL_ROWS);

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from './auth-provider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -66,7 +66,7 @@ export function LadderSummary() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchLadderSummary = async () => {
+  const fetchLadderSummary = useCallback(async () => {
     if (!user) return;
 
     setLoading(true);
@@ -94,13 +94,13 @@ export function LadderSummary() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user) {
       fetchLadderSummary();
     }
-  }, [user]);
+  }, [user, fetchLadderSummary]);
 
   if (!user) {
     return null;

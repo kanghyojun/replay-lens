@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
  * DEV ONLY: Export current session cookies for Playwright tests
  * This endpoint should only be accessible in development mode
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   // Only allow in development
   if (process.env.NODE_ENV !== 'development') {
     return NextResponse.json(
