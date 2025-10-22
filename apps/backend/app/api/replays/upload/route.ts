@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     // Parse replay using sc2ts
     let replay: SC2Replay;
     try {
-      replay = SC2Replay.fromBuffer(buffer);
+      replay = await SC2Replay.fromBuffer(buffer);
     } catch (error) {
       console.error('Replay parsing error:', error);
       return NextResponse.json(
