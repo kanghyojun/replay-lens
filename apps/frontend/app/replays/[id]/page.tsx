@@ -53,7 +53,7 @@ export default function ReplayDetailPage({ params }: { params: Promise<{ id: str
     async function fetchReplay() {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:2001/api/replays/${resolvedParams.id}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/replays/${resolvedParams.id}`, {
           credentials: 'include',
         });
 
