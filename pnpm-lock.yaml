@@ -32,6 +32,9 @@ importers:
       '@types/passport':
         specifier: ^1.0.17
         version: 1.0.17
+      compressjs:
+        specifier: ^1.0.3
+        version: 1.0.3
       dotenv:
         specifier: ^17.2.2
         version: 17.2.2
@@ -41,6 +44,9 @@ importers:
       express-session:
         specifier: ^1.18.2
         version: 1.18.2
+      fflate:
+        specifier: ^0.8.2
+        version: 0.8.2
       next:
         specifier: 15.5.3
         version: 15.5.3(@playwright/test@1.55.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -62,6 +68,9 @@ importers:
       sc2ts:
         specifier: ^0.4.0
         version: 0.4.0
+      seek-bzip:
+        specifier: ^2.0.0
+        version: 2.0.0
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3
